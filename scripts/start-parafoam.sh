@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright (c) 2020, Nimbix, Inc.
 # All rights reserved.
 #
@@ -25,39 +26,8 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
-FROM ubuntu:bionic
-LABEL maintainer="Nimbix, Inc." \
-      license="BSD"
 
-# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
-ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20200205.1000}
+# OpenFOAM config dir
+. /opt/openfoam7/etc/bashrc
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-WORKDIR /tmp
-
-# Install image-common tools and desktop
-RUN apt-get -y update && \
-    apt-get -y install wget curl software-properties-common && \
-    curl -H 'Cache-Control: no-cache' \
-        https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
-        | bash -s -- --setup-nimbix-desktop
-
-#RUN mkdir -p /usr/local/src
-
-# Add OpenFOAM repo
-RUN sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
-RUN add-apt-repository http://dl.openfoam.org/ubuntu
-
-# add OpenFOAM packages, with ParaView
-RUN apt-get -y install openfoam7 && \
-    apt-get clean && rm -rf /var/lib/apt/*
-
-COPY scripts /usr/local/scripts
-
-COPY NAE/AppDef.json /etc/NAE/AppDef.json
-RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://api.jarvice.com/jarvice/validate
-
-COPY NAE/screenshot.png /etc/NAE/screenshot.png
-COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
+paraFoam

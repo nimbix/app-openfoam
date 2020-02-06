@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright (c) 2020, Nimbix, Inc.
 # All rights reserved.
 #
@@ -25,39 +26,25 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
-FROM ubuntu:bionic
-LABEL maintainer="Nimbix, Inc." \
-      license="BSD"
 
-# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
-ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20200205.1000}
+# OpenFOAM config dir
+FOAMETC=/opt/openfoam7/etc
 
-ARG DEBIAN_FRONTEND=noninteractive
+# add override for the OpenFOAM project dir
+echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 
-WORKDIR /tmp
+# Add in the OpenFOAM environment
+echo ". $FOAMETC/bashrc" >> ~/.bashrc
+echo "cd /data/openfoam7/run" >> ~/.bashrc
 
-# Install image-common tools and desktop
-RUN apt-get -y update && \
-    apt-get -y install wget curl software-properties-common && \
-    curl -H 'Cache-Control: no-cache' \
-        https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
-        | bash -s -- --setup-nimbix-desktop
+# create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
+mkdir -p /data/openfoam7/run
 
-#RUN mkdir -p /usr/local/src
+# Add a desktop shortcut for the paraFoam viewer
+mkdir -p $HOME/Desktop
+cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
 
-# Add OpenFOAM repo
-RUN sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
-RUN add-apt-repository http://dl.openfoam.org/ubuntu
+# unclear if this should be set
+#QT_GRAPHICSSYSTEM="opengl"; export QT_GRAPHICSSYSTEM
 
-# add OpenFOAM packages, with ParaView
-RUN apt-get -y install openfoam7 && \
-    apt-get clean && rm -rf /var/lib/apt/*
-
-COPY scripts /usr/local/scripts
-
-COPY NAE/AppDef.json /etc/NAE/AppDef.json
-RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://api.jarvice.com/jarvice/validate
-
-COPY NAE/screenshot.png /etc/NAE/screenshot.png
-COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
+exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM
