@@ -1,5 +1,5 @@
 {
-  "name": "OpenFOAM 7",
+  "name": "OpenFOAM&trade; 7",
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
   "author": "OpenCFD Ltd",
   "licensed": true,
@@ -17,22 +17,21 @@
   ],
   "commands": {
     "GUI": {
-      "scale_max": 1,
       "path": "/usr/local/scripts/start-openfoam-viz.sh",
       "interactive": true,
-      "name": "OpenFOAM",
-      "description": "Run OpenFOAM with the ParaView/paraFoam graphical user interface (GUI)",
+      "name": "OpenFOAM GUI",
+      "description": "Run OpenFOAM&trade; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam7/run ($FOAM_RUN)",
       "machines": [
         "nc[3-9]*",
         "nc[1-9][0-9]*"
       ],
       "parameters": {}
     },
-    "Server": {
-      "path": "/sbin/init",
+    "batch": {
+      "path": "/usr/local/scripts/openfoam-batch.sh",
       "interactive": true,
-      "name": "Server",
-      "description": "Launch a session with all boot services, including SSH (if installed)",
+      "name": "OpenFOAM Batch",
+      "description": "Run OpenFOAM",
       "parameters": {}
     }
   },

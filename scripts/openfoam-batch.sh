@@ -31,7 +31,7 @@
 FOAMETC=/opt/openfoam7/etc
 
 # add override for the OpenFOAM project dir
-echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 
 # Add in the OpenFOAM environment
 echo ". $FOAMETC/bashrc" >> ~/.bashrc
@@ -40,11 +40,12 @@ echo "cd /data/openfoam7/run" >> ~/.bashrc
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
 
-# Add a desktop shortcut for the paraFoam viewer
-mkdir -p $HOME/Desktop
-cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
+# select Case dir
 
-# unclear if this should be set
-#QT_GRAPHICSSYSTEM="opengl"; export QT_GRAPHICSSYSTEM
+# decompose prepped Mesh option
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM
+# run selected mesh
+
+# run solver on mesh with MPI
+
+# post-process prep: reconstruct mesh
