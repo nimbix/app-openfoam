@@ -30,8 +30,8 @@
     "batch": {
       "path": "/usr/local/scripts/openfoam-batch.sh",
       "interactive": true,
-      "name": "OpenFOAM&reg; Batch",
-      "description": "Run OpenFOAM",
+      "name": "OpenFOAM Batch",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI",
       "parameters": {}
     }
   },
