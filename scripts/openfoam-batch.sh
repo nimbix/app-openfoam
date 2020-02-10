@@ -88,11 +88,12 @@ done
 FOAMETC=/opt/openfoam7/etc
 
 # add override for the OpenFOAM project dir
-echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+#echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+export WM_PROJECT_USER_DIR=/data/openfoam
 
 # Add in the OpenFOAM environment
-echo ". $FOAMETC/bashrc" >> $HOME/.bashrc
-echo "cd /data/openfoam7/run" >> $HOME/.bashrc
+#echo ". $FOAMETC/bashrc" >> $HOME/.bashrc
+#echo "cd /data/openfoam7/run" >> $HOME/.bashrc
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
@@ -101,7 +102,7 @@ mkdir -p /data/openfoam7/run
 CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
-. $HOME/.bashrc
+. $FOAMETC/bashrc
 
 # decompose prepped Mesh option
 
