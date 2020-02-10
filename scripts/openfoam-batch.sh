@@ -84,11 +84,10 @@ while [[ -n "$1" ]]; do
   shift
 done
 
-# OpenFOAM config dir
-FOAMETC=/opt/openfoam7/etc
+set -x
 
 # add override for the OpenFOAM project dir
-#echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 export WM_PROJECT_USER_DIR=/data/openfoam
 
 # Add in the OpenFOAM environment
@@ -102,7 +101,13 @@ mkdir -p /data/openfoam7/run
 CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
-. $FOAMETC/bashrc
+
+if [[ -f /opt/openfoam7/etc/bashrc ]]; then
+  . /opt/openfoam7/etc/bashrc
+else
+  echo "ERROR: OpenFOAM environment unavailable"
+  exit 1
+fi
 
 # decompose prepped Mesh option
 

@@ -34,9 +34,10 @@ FOAMETC=/opt/openfoam7/etc
 echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 
 # Add in the OpenFOAM environment
-echo ". $FOAMETC/bashrc" >> ~/.bashrc
-echo "cd /data/openfoam7/run" >> ~/.bashrc
-
+if [[ -d $FOAMETC ]]; then
+  echo ". $FOAMETC/bashrc" >> $HOME/.bashrc
+  echo "cd /data/openfoam7/run" >> $HOME/.bashrc
+fi
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
 
