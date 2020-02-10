@@ -49,7 +49,7 @@ fi
 
 # start SSHd
 if [[ -x /usr/sbin/sshd ]]; then
-  sudo /usr/sbin/sshd-keygen && sudo /usr/sbin/sshd
+  sudo service ssh start
 fi
 
 set -e
@@ -91,8 +91,8 @@ FOAMETC=/opt/openfoam7/etc
 echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 
 # Add in the OpenFOAM environment
-echo ". $FOAMETC/bashrc" >> ~/.bashrc
-echo "cd /data/openfoam7/run" >> ~/.bashrc
+echo ". $FOAMETC/bashrc" >> $HOME/.bashrc
+echo "cd /data/openfoam7/run" >> $HOME/.bashrc
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
@@ -101,6 +101,7 @@ mkdir -p /data/openfoam7/run
 CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
+. $HOME/.bashrc
 
 # decompose prepped Mesh option
 
