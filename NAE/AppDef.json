@@ -27,16 +27,16 @@
       ],
       "parameters": {}
     },
-    "batch": {
+    "Batch": {
       "path": "/usr/local/scripts/openfoam-batch.sh",
       "interactive": true,
       "name": "OpenFOAM Batch",
-      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam7/run ($FOAM_RUN)",
       "parameters": {
         "-case": {
           "required": true,
           "type": "FILE",
-          "name": "OpenFOAM Case, select any file in the Case directory"
+          "name": "OpenFOAM case, select any file in the case directory"
         },
         "-mesh": {
           "type": "BOOL",

@@ -84,26 +84,21 @@ while [[ -n "$1" ]]; do
   shift
 done
 
-set -x
-
 # add override for the OpenFOAM project dir
 echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 export WM_PROJECT_USER_DIR=/data/openfoam
 
-# Add in the OpenFOAM environment
-#echo ". $FOAMETC/bashrc" >> $HOME/.bashrc
-#echo "cd /data/openfoam7/run" >> $HOME/.bashrc
-
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
 
-# select Case dir. strip file name off path
+# select Case dir, strip file name off path
 CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
 
 if [[ -f /opt/openfoam7/etc/bashrc ]]; then
-  . /opt/openfoam7/etc/bashrc
+  echo "Sourcing OpenFOAM environment"
+  source /opt/openfoam7/etc/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
   exit 1
