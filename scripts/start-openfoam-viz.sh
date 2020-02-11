@@ -27,6 +27,24 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 
+# Source the JARVICE job environment variables
+[[ -r /etc/JARVICE/jobenv.sh ]] && source /etc/JARVICE/jobenv.sh
+
+# Wait for slaves...max of 60 seconds
+SLAVE_CHECK_TIMEOUT=60
+TOOLSDIR="/usr/local/JARVICE/tools/bin"
+${TOOLSDIR}/python_ssh_test ${SLAVE_CHECK_TIMEOUT}
+ERR=$?
+if [[ ${ERR} -gt 0 ]]; then
+  echo "One or more slaves failed to start" 1>&2
+  exit ${ERR}
+fi
+
+# start SSHd
+if [[ -x /usr/sbin/sshd ]]; then
+  sudo service ssh start
+fi
+
 # OpenFOAM config dir
 FOAMETC=/opt/openfoam7/etc
 
