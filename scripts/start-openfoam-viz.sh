@@ -48,25 +48,11 @@ fi
 # OpenFOAM config dir
 FOAMETC=/opt/openfoam7/etc
 
-#for i in $(cat /etc/JARVICE/nodes); do
-#  echo "$i:$TASKS_PER_NODE:$CORES" >>$HOME/MACHINES.txt
-#  # Daemon script does not work on CentOS 7
-#  ssh -oBatchMode=yes "$i" /opt/AnsysEM/rsm/Linux64/ansoftrsmservice.exe
-#done
-
-# Add in the OpenFOAM environment to each node
+# Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
   ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i sed -i '1s;^;source /opt/openfoam7/etc;' $HOME/.bashrc
+  ssh $i sed -i '1 i\source /opt/openfoam7/etc/bashrc' $HOME/.bashrc
 done
-
-# add override for the OpenFOAM project dir
-#echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-
-# Add in the OpenFOAM environment
-#if [[ -d $FOAMETC ]]; then
-#  echo "cd /data/openfoam7/run" >> $HOME/.bashrc
-#fi
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
 mkdir -p /data/openfoam7/run
