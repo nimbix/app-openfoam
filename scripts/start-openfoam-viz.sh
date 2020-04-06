@@ -51,7 +51,7 @@ FOAMETC=/opt/openfoam7/etc
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
   ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i sed -i '1 i\source /opt/openfoam7/etc/bashrc' $HOME/.bashrc
+  ssh $i 'sed -i "1 i\source /opt/openfoam7/etc/bashrc" $HOME/.bashrc'
 done
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
