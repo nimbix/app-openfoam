@@ -1,5 +1,5 @@
 {
-  "name": "OpenFOAM&reg; 7",
+  "name": "OpenFOAM&reg; 8 for ARM",
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
   "author": "OpenCFD Ltd",
   "licensed": true,
@@ -7,10 +7,7 @@
     "Simulation/Computational Fluid Dynamics"
   ],
   "machines": [
-    "n[2-9]*",
-    "n[1-9][0-9]*",
-    "nc[3-9]*",
-    "nc[1-9][0-9]*"
+    "na*"
   ],
   "vault-types": [
     "FILE"
@@ -20,10 +17,9 @@
       "path": "/usr/local/scripts/start-openfoam-viz.sh",
       "interactive": true,
       "name": "OpenFOAM GUI",
-      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam7/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam8/run ($FOAM_RUN)",
       "machines": [
-        "nc[3-9]*",
-        "nc[1-9][0-9]*"
+        "na*"
       ],
       "parameters": {}
     },
@@ -31,7 +27,7 @@
       "path": "/usr/local/scripts/openfoam-batch.sh",
       "interactive": true,
       "name": "OpenFOAM Batch",
-      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam7/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam8/run ($FOAM_RUN)",
       "parameters": {
         "-case": {
           "required": true,

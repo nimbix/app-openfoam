@@ -31,7 +31,7 @@ LABEL maintainer="Nimbix, Inc." \
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20200205.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -51,7 +51,7 @@ RUN sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
 RUN add-apt-repository http://dl.openfoam.org/ubuntu
 
 # add OpenFOAM packages, with ParaView
-RUN apt-get -y install openfoam7 && \
+RUN apt-get -y install openfoam8 && \
     apt-get clean && rm -rf /var/lib/apt/*
 
 COPY scripts /usr/local/scripts
