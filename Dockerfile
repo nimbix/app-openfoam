@@ -39,7 +39,7 @@ WORKDIR /tmp
 
 # Install image-common tools and desktop
 RUN apt-get -y update && \
-    apt-get -y install wget curl software-properties-common && \
+    apt-get -y install wget gnupg curl software-properties-common && \
     curl -H 'Cache-Control: no-cache' \
         https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
         | bash -s -- --setup-nimbix-desktop
@@ -47,11 +47,12 @@ RUN apt-get -y update && \
 #RUN mkdir -p /usr/local/src
 
 # Add OpenFOAM repo
-RUN sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
+RUN sh -c "wget -O - https://dl.openfoam.org/gpg.key | apt-key add -"
 RUN add-apt-repository http://dl.openfoam.org/ubuntu
 
 # add OpenFOAM packages, with ParaView
-RUN apt-get -y install openfoam8 && \
+RUN apt-get -y update && \
+    apt-get -y install openfoam8 && \
     apt-get clean && rm -rf /var/lib/apt/*
 
 COPY scripts /usr/local/scripts
