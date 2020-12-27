@@ -25,9 +25,42 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
+
+FROM ubuntu:bionic as build
+LABEL maintainer="Nimbix, Inc." \
+      license="BSD"
+
+# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
+ARG SERIAL_NUMBER
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG BUILD_DIR=/usr/local/OpenFOAM
+
+WORKDIR BUILD_DIR
+RUN apt-get -y update && \
+    apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev \
+    libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev \
+    libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl wget
+
+
+RUN wget https://sourceforge.net/projects/openfoam/files/v1912/OpenFOAM-v1912.tgz && \
+    wget https://sourceforge.net/projects/openfoam/files/v1912/ThirdParty-v1912.tgz
+
+RUN tar -xzf OpenFOAM-v1912.tgz && \
+    tar -xzf ThirdParty-v1912.tgz
+
+RUN cd OpenFOAM-v1912 && echo "WM_COMPILER=Arm" > etc/prefs.sh && \
+    source etc/bashrc  && ./Allwmake -j -s -l
+
+
+
+################# Multistage Build, stage 2 ###################################
 FROM ubuntu:bionic
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
+
+COPY --from=build /usr/local/OpenFOAM /usr/local/OpenFOAM
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
