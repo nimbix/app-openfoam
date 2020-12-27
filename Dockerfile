@@ -41,7 +41,7 @@ WORKDIR BUILD_DIR
 RUN apt-get -y update && \
     apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev \
     libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev \
-    libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl wget
+    libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl wget clang-6.0
 
 
 RUN wget https://sourceforge.net/projects/openfoam/files/v1912/OpenFOAM-v1912.tgz && \
@@ -50,9 +50,7 @@ RUN wget https://sourceforge.net/projects/openfoam/files/v1912/OpenFOAM-v1912.tg
 RUN tar -xzf OpenFOAM-v1912.tgz && \
     tar -xzf ThirdParty-v1912.tgz
 
-RUN cd OpenFOAM-v1912 && echo "WM_COMPILER=Arm" > etc/prefs.sh && \
-    bash -c "source etc/bashrc && ./Allwmake -j -s -l"
-
+RUN bash -c "cd OpenFOAM-v1912 && echo 'WM_COMPILER=Arm' > etc/prefs.sh && source etc/bashrc && ./Allwmake -j -s -l"
 
 
 ################# Multistage Build, stage 2 ###################################
