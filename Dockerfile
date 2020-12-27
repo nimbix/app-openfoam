@@ -44,13 +44,13 @@ RUN apt-get -y update && \
     libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl wget clang-6.0
 
 
-RUN wget https://sourceforge.net/projects/openfoam/files/v1912/OpenFOAM-v1912.tgz && \
-    wget https://sourceforge.net/projects/openfoam/files/v1912/ThirdParty-v1912.tgz
+RUN wget https://sourceforge.net/projects/openfoam/files/v2012/OpenFOAM-v2012.tgz && \
+    wget https://sourceforge.net/projects/openfoam/files/v2012/ThirdParty-v2012.tgz
 
-RUN tar -xzf OpenFOAM-v1912.tgz && \
-    tar -xzf ThirdParty-v1912.tgz
+RUN tar -xzf OpenFOAM-v2012.tgz && \
+    tar -xzf ThirdParty-v2012.tgz
 
-RUN bash -c "cd OpenFOAM-v1912 && echo 'WM_COMPILER=Arm' > etc/prefs.sh && source etc/bashrc && ./Allwmake -j -s -l"
+RUN bash -c "cd OpenFOAM-v2012 && echo 'WM_COMPILER=Arm' > etc/prefs.sh && source etc/bashrc && ./Allwmake -j -s -l"
 
 
 ################# Multistage Build, stage 2 ###################################
