@@ -25,13 +25,37 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
-FROM ubuntu:bionic
+FROM ubuntu:bionic as build
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
 ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /usr/local/OpenFOAM
+RUN apt-get -y update && \
+    apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
+RUN apt-get -y install libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl
+
+RUN git clone https://github.com/OpenFOAM/OpenFOAM-dev.git
+RUN git clone https://github.com/OpenFOAM/ThirdParty-dev.git
+
+RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-dev/etc/bashrc && cd ThirdParty-dev && ./Allwmake
+
+FROM ubuntu:bionic
+COPY --from=build /usr/local/ /usr/local/
+
+## Add OpenFOAM repo
+#RUN sh -c "wget -O - https://dl.openfoam.org/gpg.key | apt-key add -"
+#RUN add-apt-repository http://dl.openfoam.org/ubuntu
+#
+## add OpenFOAM packages, with ParaView
+#RUN apt-get update && \
+#    apt-get -y install openfoam8 && \
+#    apt-get clean && rm -rf /var/lib/apt/*
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -43,17 +67,6 @@ RUN apt-get -y update && \
     curl -H 'Cache-Control: no-cache' \
         https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
         | bash -s -- --setup-nimbix-desktop
-
-#RUN mkdir -p /usr/local/src
-
-# Add OpenFOAM repo
-RUN sh -c "wget -O - https://dl.openfoam.org/gpg.key | apt-key add -"
-RUN add-apt-repository http://dl.openfoam.org/ubuntu
-
-# add OpenFOAM packages, with ParaView
-RUN apt-get -y update && \
-    apt-get -y install openfoam8 && \
-    apt-get clean && rm -rf /var/lib/apt/*
 
 COPY scripts /usr/local/scripts
 
