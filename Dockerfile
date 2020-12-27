@@ -51,7 +51,7 @@ RUN tar -xzf OpenFOAM-v1912.tgz && \
     tar -xzf ThirdParty-v1912.tgz
 
 RUN cd OpenFOAM-v1912 && echo "WM_COMPILER=Arm" > etc/prefs.sh && \
-    source etc/bashrc  && ./Allwmake -j -s -l
+    bash -c "source etc/bashrc && ./Allwmake -j -s -l"
 
 
 
