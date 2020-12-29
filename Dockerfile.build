@@ -26,16 +26,43 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 
-FROM ubuntu:focal
+FROM ubuntu:bionic as build
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20200205.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
 
-ARG GIT_BRANCH
-ENV GIT_BRANCH ${GIT_BRANCH:-focal}
+ARG DEBIAN_FRONTEND=noninteractive
+ARG BUILD_DIR=/usr/local/OpenFOAM
+
+WORKDIR $BUILD_DIR
+RUN apt-get -y update && \
+    apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev \
+    libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev \
+    libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl wget
+
+
+RUN wget https://sourceforge.net/projects/openfoam/files/v2012/OpenFOAM-v2012.tgz && \
+    wget https://sourceforge.net/projects/openfoam/files/v2012/ThirdParty-v2012.tgz
+
+RUN tar -xzf OpenFOAM-v2012.tgz && \
+    tar -xzf ThirdParty-v2012.tgz
+
+RUN bash -c "cd OpenFOAM-v2012 && echo 'WM_COMPILER=Gcc' > etc/prefs.sh && source etc/bashrc && ./Allwmake -j -s -l"
+
+
+################# Multistage Build, stage 2 ###################################
+FROM ubuntu:bionic
+LABEL maintainer="Nimbix, Inc." \
+      license="BSD"
+
+COPY --from=build /usr/local/OpenFOAM/OpenFOAM-v2012 /usr/local/OpenFOAM
+
+# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
+ARG SERIAL_NUMBER
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20200205.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -46,10 +73,7 @@ RUN apt-get -y update && \
     apt-get -y install wget curl software-properties-common && \
     curl -H 'Cache-Control: no-cache' \
         https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
-        | bash -s -- --setup-nimbix-desktop --image-common-branch $GIT_BRANCH
-
-# v2006 in focal
-RUN apt-get -y install openfoam
+        | bash -s -- --setup-nimbix-desktop
 
 COPY scripts /usr/local/scripts
 
