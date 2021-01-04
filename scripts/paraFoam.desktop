@@ -2,7 +2,7 @@
 Name=paraFoam
 Comment=ParaView with OpenFOAM extensions pre-loaded
 Exec=/usr/local/scripts/start-parafoam.sh
-Path=/home/nimbix/data/openfoam7/run
+Path=/home/nimbix/data/openfoam/run
 Icon=/etc/NAE/OpenFOAM-logo-135x135.png
 Terminal=false
 Type=Application

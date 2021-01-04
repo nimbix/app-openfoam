@@ -20,7 +20,7 @@
       "path": "/usr/local/scripts/start-openfoam-viz.sh",
       "interactive": true,
       "name": "OpenFOAM GUI",
-      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam7/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam/run ($FOAM_RUN)",
       "machines": [
         "nc[3-9]*",
         "nc[1-9][0-9]*"
@@ -31,7 +31,7 @@
       "path": "/usr/local/scripts/openfoam-batch.sh",
       "interactive": true,
       "name": "OpenFOAM Batch",
-      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam7/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam/run ($FOAM_RUN)",
       "parameters": {
         "-case": {
           "required": true,

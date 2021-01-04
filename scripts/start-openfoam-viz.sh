@@ -46,16 +46,16 @@ if [[ -x /usr/sbin/sshd ]]; then
 fi
 
 # OpenFOAM config dir
-FOAMETC=/opt/openfoam7/etc
+FOAMETC=/usr/share/openfoam/etc
 
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam7" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i 'sed -i "1 i\source /opt/openfoam7/etc/bashrc" $HOME/.bashrc'
+  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+  ssh $i 'sed -i "1 i\source /usr/share/openfoam/etc/bashrc" $HOME/.bashrc'
 done
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam7/run
+mkdir -p /data/openfoam/run
 
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
@@ -64,4 +64,4 @@ cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
 # unclear if this should be set
 #QT_GRAPHICSSYSTEM="opengl"; export QT_GRAPHICSSYSTEM
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam7/run
+exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam/run

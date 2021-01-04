@@ -28,6 +28,6 @@
 # policies, either expressed or implied, of Nimbix, Inc.
 
 # OpenFOAM config dir
-. /opt/openfoam7/etc/bashrc
+. /usr/share/openfoam/etc/bashrc
 
 paraFoam
