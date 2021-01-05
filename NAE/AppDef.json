@@ -1,7 +1,7 @@
 {
   "name": "OpenFOAM&reg; 8 for ARM",
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
-  "author": "OpenCFD Ltd",
+  "author": "The OpenFOAM Foundation Ltd",
   "licensed": true,
   "classifications": [
     "Simulation/Computational Fluid Dynamics"
