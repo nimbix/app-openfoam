@@ -44,8 +44,8 @@ RUN apt-get -y install libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev c
 RUN git clone https://github.com/OpenFOAM/OpenFOAM-8.git
 RUN git clone https://github.com/OpenFOAM/ThirdParty-8.git
 
-# source the build environ, start build in 3rd party and use bash to run paraview build, it defaults to sh
-RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd ThirdParty-8 && ./Allwmake && bash ./makeParaView"
+# source the build environ, start build in 3rd party
+RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd ThirdParty-8 && ./Allwmake"
 
 ################# Multistage Build, stage 2 ###################################
 FROM ubuntu:bionic
@@ -61,6 +61,9 @@ RUN apt-get -y update && \
     curl -H 'Cache-Control: no-cache' \
         https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
         | bash -s -- --setup-nimbix-desktop
+
+#RUN apt-get -y install libopenmpi-dev openmpi-bin libqt5gui5 libqt5help5 libqt5x11extras5
+RUN apt-get -y install libopenmpi-dev openmpi-bin paraview
 
 COPY scripts /usr/local/scripts
 
