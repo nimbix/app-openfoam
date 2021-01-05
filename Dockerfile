@@ -31,31 +31,25 @@ LABEL maintainer="Nimbix, Inc." \
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20210104.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /usr/local/OpenFOAM
 RUN apt-get -y update && \
-    apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
+    apt-get -y install build-essential flex bison git-core cmake zlib1g-dev libboost-system-dev libboost-thread-dev \
+    libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
 RUN apt-get -y install libqt5x11extras5-dev libxt-dev qt5-default qttools5-dev curl
 
-RUN git clone https://github.com/OpenFOAM/OpenFOAM-dev.git
-RUN git clone https://github.com/OpenFOAM/ThirdParty-dev.git
+RUN git clone https://github.com/OpenFOAM/OpenFOAM-8.git
+RUN git clone https://github.com/OpenFOAM/ThirdParty-8.git
 
-RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-dev/etc/bashrc && cd ThirdParty-dev && ./Allwmake
+# source the build environ, start build in 3rd party and use bash to run paraview build, it defaults to sh
+RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd ThirdParty-8 && ./Allwmake && bash ./makeParaView"
 
+################# Multistage Build, stage 2 ###################################
 FROM ubuntu:bionic
 COPY --from=build /usr/local/ /usr/local/
-
-## Add OpenFOAM repo
-#RUN sh -c "wget -O - https://dl.openfoam.org/gpg.key | apt-key add -"
-#RUN add-apt-repository http://dl.openfoam.org/ubuntu
-#
-## add OpenFOAM packages, with ParaView
-#RUN apt-get update && \
-#    apt-get -y install openfoam8 && \
-#    apt-get clean && rm -rf /var/lib/apt/*
 
 ARG DEBIAN_FRONTEND=noninteractive
 
