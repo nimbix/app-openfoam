@@ -96,9 +96,9 @@ CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
 
-if [[ -f /opt/openfoam8/etc/bashrc ]]; then
+if [[ -f /usr/local/openfoam/OpenFoam-8/bashrc ]]; then
   echo "Sourcing OpenFOAM environment"
-  source /opt/openfoam8/etc/bashrc || return
+  source /usr/local/openfoam/OpenFoam-8/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
   exit 1
