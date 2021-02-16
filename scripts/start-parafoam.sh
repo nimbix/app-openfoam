@@ -30,4 +30,5 @@
 # OpenFOAM config dir
 . /usr/local/openfoam/OpenFOAM-8/etc/bashrc
 
-paraFoam
+# use the builtin version until we can get one built on ARM
+paraFoam -builtin
