@@ -84,6 +84,9 @@ while [[ -n "$1" ]]; do
   shift
 done
 
+# OpenFOAM config dir
+FOAMETC=/usr/local/openfoam/OpenFOAM-8/etc
+
 # add override for the OpenFOAM project dir
 echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
 export WM_PROJECT_USER_DIR=/data/openfoam

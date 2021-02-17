@@ -46,7 +46,7 @@ if [[ -x /usr/sbin/sshd ]]; then
 fi
 
 # OpenFOAM config dir
-FOAMETC=/usr/local/openfoam/OpenFOAM-8
+FOAMETC=/usr/local/openfoam/OpenFOAM-8/etc
 
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
