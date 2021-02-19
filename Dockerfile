@@ -45,7 +45,7 @@ RUN git clone https://github.com/OpenFOAM/OpenFOAM-8.git
 RUN git clone https://github.com/OpenFOAM/ThirdParty-8.git
 
 # source the build environ, start build in 3rd party
-RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd ThirdParty-8 && ./Allwmake && bash ./makeParaView"
+RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd ThirdParty-8 && ./Allwmake && bash ./makeParaView -rendering OpenGL"
 RUN bash -c "source /usr/local/OpenFOAM/OpenFOAM-8/etc/bashrc && cd OpenFOAM-8 && ./Allwmake -j"
 
 ################# Multistage Build, stage 2 ###################################
