@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2020, Nimbix, Inc.
+# Copyright (c) 2021, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,16 +46,16 @@ if [[ -x /usr/sbin/sshd ]]; then
 fi
 
 # OpenFOAM config dir
-FOAMETC=/opt/openfoam8/etc
+FOAMETC=/opt/openfoam9/etc
 
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam8" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i 'sed -i "1 i\source /opt/openfoam8/etc/bashrc" $HOME/.bashrc'
+  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam9" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+  ssh $i 'sed -i "1 i\source /opt/openfoam9/etc/bashrc" $HOME/.bashrc'
 done
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam8/run
+mkdir -p /data/openfoam9/run
 
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
@@ -64,4 +64,4 @@ cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
 # unclear if this should be set
 #QT_GRAPHICSSYSTEM="opengl"; export QT_GRAPHICSSYSTEM
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam8/run
+exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam9/run

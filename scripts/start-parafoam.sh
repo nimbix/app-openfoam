@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2020, Nimbix, Inc.
+# Copyright (c) 2021, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,6 @@
 # policies, either expressed or implied, of Nimbix, Inc.
 
 # OpenFOAM config dir
-. /opt/openfoam8/etc/bashrc
+. /opt/openfoam9/etc/bashrc
 
 paraFoam

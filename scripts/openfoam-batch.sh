@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2020, Nimbix, Inc.
+# Copyright (c) 2021, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ fi
 set -e
 
 # parse command line
-CASE="/data/openfoam8/run"
+CASE="/data/openfoam9/run"
 MESHTYPE="blockMesh"
 SOLVER="laplacianFoam"
 
@@ -89,16 +89,16 @@ echo "WM_PROJECT_USER_DIR=/data/openfoam" | sudo tee -a "$FOAMETC"/prefs.sh >/de
 export WM_PROJECT_USER_DIR=/data/openfoam
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam8/run
+mkdir -p /data/openfoam9/run
 
 # select Case dir, strip file name off path
 CASE=$(dirname "$CASE")
 echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
 
-if [[ -f /opt/openfoam8/etc/bashrc ]]; then
+if [[ -f /opt/openfoam9/etc/bashrc ]]; then
   echo "Sourcing OpenFOAM environment"
-  source /opt/openfoam8/etc/bashrc || return
+  source /opt/openfoam9/etc/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
   exit 1
