@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2020, Nimbix, Inc.
+# Copyright (c) 2022, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
