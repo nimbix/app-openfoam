@@ -31,7 +31,7 @@ LABEL maintainer="Nimbix, Inc." \
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20220111.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -57,8 +57,8 @@ RUN apt-get -y update && \
 
 COPY scripts /usr/local/scripts
 
-COPY NAE/AppDef.json /etc/NAE/AppDef.json
-RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://api.jarvice.com/jarvice/validate
-
 COPY NAE/screenshot.png /etc/NAE/screenshot.png
 COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
+
+COPY NAE/AppDef.json /etc/NAE/AppDef.json
+RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
