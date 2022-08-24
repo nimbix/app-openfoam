@@ -25,13 +25,13 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
-FROM ubuntu:bionic
+FROM ubuntu:22.04
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20201223.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20220824.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -52,7 +52,7 @@ RUN add-apt-repository http://dl.openfoam.org/ubuntu
 
 # add OpenFOAM packages, with ParaView
 RUN apt-get -y update && \
-    apt-get -y install openfoam9 && \
+    apt-get -y install openfoam10 && \
     apt-get clean && rm -rf /var/lib/apt/*
 
 COPY scripts /usr/local/scripts

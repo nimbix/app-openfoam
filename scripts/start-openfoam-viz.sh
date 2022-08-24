@@ -46,16 +46,17 @@ if [[ -x /usr/sbin/sshd ]]; then
 fi
 
 # OpenFOAM config dir
-FOAMETC=/opt/openfoam9/etc
+FOAMETC=/opt/openfoam10/etc
 
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam9" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i 'sed -i "1 i\source /opt/openfoam9/etc/bashrc" $HOME/.bashrc'
+  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam10" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+  ssh $i 'sed -i "1 i\source /opt/openfoam10/etc/bashrc" $HOME/.bashrc'
+  ssh $i 'sed -i "1 i\export OMPI_MCA_btl_vader_single_copy_mechanism=none" $HOME/.bashrc' # May not be needed
 done
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam9/run
+mkdir -p /data/openfoam10/run
 
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
@@ -64,4 +65,4 @@ cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
 # unclear if this should be set
 #QT_GRAPHICSSYSTEM="opengl"; export QT_GRAPHICSSYSTEM
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam9/run
+exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam10/run
