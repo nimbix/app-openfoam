@@ -130,6 +130,48 @@
           "name": "Solver"
         }
       }
+    },
+    "Benchmark": {
+      "path": "/usr/local/scripts/openfoam-benchmark.sh",
+      "interactive": true,
+      "name": "OpenFOAM Benchmark",
+      "description": "Run OpenFOAM&reg; benchmark using the motorbike example file",
+      "parameters": {
+        "-num_procs": {
+          "value": 1,
+          "min": 1,
+          "max": 2048,
+          "required": true,
+          "type": "INT",
+          "name": "Number of processes per node to use."
+        },
+        "-num_nodes": {
+          "value": 1,
+          "min": 1,
+          "max": 2048,
+          "type": "INT",
+          "required": true,
+          "name": "Number of nodes"
+        },
+        "-scaling": {
+          "value": 1.0,
+          "min": 0.5,
+          "max": 10.0,
+          "precision": 5,
+          "type": "FLOAT",
+          "required": true,
+          "name": "Scaling to original block mesh"
+        },
+        "-interconnect": {
+          "values": [
+            "1",
+            "2"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "MPI Connector Type"
+        }
+      }
     }
   },
   "image": {
