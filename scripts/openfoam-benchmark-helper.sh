@@ -37,7 +37,7 @@ if [[ -f /opt/openfoam10/etc/bashrc ]]; then
   source /opt/openfoam10/etc/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
-#   exit 1
+  exit 1
 fi
 
 # Source the runtime functions
@@ -51,9 +51,9 @@ updateDecomposePar()
 
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")
-    sed -i "s/numberOfSubdomains  6;/numberOfSubdomains  $totalSubdomains;/" system/decomposeParDict
-    sed -i "s/decomposer      hierarchical;/method          scotch;/" system/decomposeParDict
-    sed -i "s/distributor     ptscotch;//" system/decomposeParDict
+    sed -i "s/numberOfSubdomains  6;/numberOfSubdomains  $totalSubdomains;/" /data/openfoam10/benchmark/system/decomposeParDict
+    sed -i "s/decomposer      hierarchical;/method          scotch;/" /data/openfoam10/benchmark/system/decomposeParDict
+    sed -i "s/distributor     ptscotch;//" /data/openfoam10/benchmark/system/decomposeParDict
 }
 
 updateBlockMesh()
@@ -63,24 +63,24 @@ updateBlockMesh()
     NX=$(perl -e "print int($scaling*20+0.99)")
     NY=$(perl -e "print int($scaling*8+0.99)")
     NZ=$(perl -e "print int($scaling*8+0.99)")
-    sed -i "s/    hex (0 1 2 3 4 5 6 7) (20 8 8) simpleGrading (1 1 1)/    hex (0 1 2 3 4 5 6 7) ($NX $NY $NZ) simpleGrading (1 1 1)/" system/blockMeshDict
+    sed -i "s/    hex (0 1 2 3 4 5 6 7) (20 8 8) simpleGrading (1 1 1)/    hex (0 1 2 3 4 5 6 7) ($NX $NY $NZ) simpleGrading (1 1 1)/" /data/openfoam10/benchmark/system/blockMeshDict
 }
 
 updateSnappyHexMeshDict()
 {
     echo "Updating the snappyHexMeshDict..."
     maxGlobalCells=$(($(getNumberOfProcessors)*2))000000
-    sed -i "s/    maxLocalCells 100000;/    maxLocalCells 150000;/" system/snappyHexMeshDcit
-    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $maxGlobalCells;/" system/snappyHexMeshDcit
-    sed -i "s/    maxLoadUnbalance 0.10;/    maxLoadUnbalance 0.01;/" system/snappyHexMeshDcit
-    sed -i "s/            level (5 6);/            level (5 7);/" system/snappyHexMeshDcit
-    sed -i "s/            level   4;/            level   5;/" system/snappyHexMeshDcit
+    sed -i "s/    maxLocalCells 100000;/    maxLocalCells 150000;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
+    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $maxGlobalCells;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
+    sed -i "s/    maxLoadUnbalance 0.10;/    maxLoadUnbalance 0.01;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
+    sed -i "s/            level (5 6);/            level (5 7);/" /data/openfoam10/benchmark/system/snappyHexMeshDict
+    sed -i "s/            level   4;/            level   5;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
 }
 
 runBlockMesh()
 {
     echo "Running blockmesh"
-    cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz constant/geometry/
+    cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz /data/openfoam10/benchmark/constant/geometry/
     surfaceFeatures > log.surfaceFeatures
     blockMesh > log.blockMesh
 }
@@ -88,14 +88,14 @@ runBlockMesh()
 runDecomposePar()
 {
     echo "Running decomposePar"
-    decomposePar -copyZero > log.decomposePar
+    decomposePar -copyZero > /data/openfoam10/benchmark/log.decomposePar
 }
 
 runSnappyHexMesh()
 {
     echo "Running snappyHexMesh"
     INTERCONNECT=$1
-    runParallelUsingInterface $INTERCONNECT snappyHexMesh
+    runParallelUsingInterface $INTERCONNECT snappyHexMesh -overwrite
 }
 
 runPotentialFoam()
@@ -115,7 +115,9 @@ runSimpleFoam()
 runParallelUsingInterface()
 {
     INTERCONNECT=$1
-    APP=$2
+    shift
+    APP=$1
+    shift
     NUM_PROCS=$(getNumberOfProcessors)
-    mpirun -np $NUM_PROCS $APP -parallel > log.$APP 2>&1
+    mpirun -np $NUM_PROCS $APP "$@" -parallel > /data/openfoam10/benchmark/log.$APP 2>&1
 }

@@ -86,11 +86,12 @@ done
 CASE="/data/openfoam10/benchmark"
 mkdir -p $CASE
 cd $CASE
-source /usr/local/scripts/openfoam-benchmark.sh
+source /usr/local/scripts/openfoam-benchmark-helper.sh
 cp -r /opt/openfoam10/tutorials/incompressible/simpleFoam/motorBike/* .
 
 updateDecomposePar $NUM_PROCS $NUM_NODES
 updateBlockMesh $SCALING
+updateSnappyHexMeshDict
 runBlockMesh
 runDecomposePar
 runSnappyHexMesh $INTERCONNECT
