@@ -43,6 +43,9 @@ fi
 # Source the runtime functions
 source $WM_PROJECT_DIR/bin/tools/RunFunctions
 
+# Needed for local testing
+export OMPI_MCA_btl_vader_single_copy_mechanism=none
+
 updateDecomposePar()
 {
     echo "Updating the decomposeParDict file..."
