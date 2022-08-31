@@ -48,6 +48,18 @@ if [[ -x /usr/sbin/sshd ]]; then
   sudo service ssh start
 fi
 
+# OpenFOAM config dir
+FOAMETC=/opt/openfoam10/etc
+
+# Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
+if [[ $(cat /etc/JARVICE/cores) != JARVICE ]]; then
+  for i in $(cat /etc/JARVICE/nodes); do
+    ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam10" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+    ssh $i 'sed -i "1 i\source /opt/openfoam10/etc/bashrc" $HOME/.bashrc'
+    ssh $i 'sed -i "1 i\export OMPI_MCA_btl_vader_single_copy_mechanism=none" $HOME/.bashrc' # May not be needed
+  done
+fi
+
 set -e
 
 # parse command line
@@ -84,16 +96,48 @@ done
 
 # Copy the motorbike tutorial to working directory
 CASE="/data/openfoam10/benchmark"
+rm -r $CASE
 mkdir -p $CASE
 cd $CASE
 source /usr/local/scripts/openfoam-benchmark-helper.sh
 cp -r /opt/openfoam10/tutorials/incompressible/simpleFoam/motorBike/* .
 
-updateDecomposePar $NUM_PROCS $NUM_NODES
-updateBlockMesh $SCALING
-updateSnappyHexMeshDict
-runBlockMesh
-runDecomposePar
-runSnappyHexMesh $INTERCONNECT
-runPotentialFoam $INTERCONNECT
-runSimpleFoam $INTERCONNECT
+echo ----------------------------------------------
+time updateDecomposePar $CASE $NUM_PROCS $NUM_NODES
+echo ----------------------------------------------
+time updateBlockMesh $CASE $SCALING
+echo ----------------------------------------------
+time updateSnappyHexMeshDict $CASE
+echo ----------------------------------------------
+time runBlockMesh $CASE
+echo ----------------------------------------------
+time runDecomposePar $CASE
+echo ----------------------------------------------
+stime=$(date '+%s%3N')
+time runSnappyHexMesh $CASE $INTERCONNECT
+etime=$(date '+%s%3N')
+dt_build=$((etime-stime))
+echo ----------------------------------------------
+time runRenumberMesh $CASE $INTERCONNECT
+echo ----------------------------------------------
+time runCheckMesh $CASE $INTERCONNECT
+echo ----------------------------------------------
+time runPotentialFoam $CASE $INTERCONNECT
+echo ----------------------------------------------
+stime=$(date '+%s%3N')
+time runSimpleFoam $CASE $INTERCONNECT
+etime=$(date '+%s%3N')
+dt_solver=$((etime-stime))
+echo ----------------------------------------------
+
+NUMBER_OF_CELLS=$(grep cells\: log.checkMesh | awk {'print $2'})
+MESH_BUILD_SCORE=$(perl -e "print int(86400000.0/$dt_build+0.99)")
+SOLVER_SCORE=$(perl -e "print int(86400000.0/$dt_solver+0.99)")
+
+if [[ ! -f "../benchmark.csv" ]]; then
+  echo "NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE" > ../benchmark.csv
+fi
+
+echo "NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE"
+echo "$NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $MESH_BUILD_SCORE, $SOLVER_SCORE"
+echo "$NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $MESH_BUILD_SCORE, $SOLVER_SCORE" >> ../benchmark.csv

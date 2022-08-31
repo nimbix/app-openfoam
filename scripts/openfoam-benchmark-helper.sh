@@ -27,7 +27,7 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 #
-# This script contains helpers for the benchmark script
+# This script contains helpers for the openfoam-benchmark script
 
 set -e
 
@@ -46,81 +46,134 @@ source $WM_PROJECT_DIR/bin/tools/RunFunctions
 # Needed for local testing
 export OMPI_MCA_btl_vader_single_copy_mechanism=none
 
-updateDecomposePar()
+function updateDecomposePar()
 {
     echo "Updating the decomposeParDict file..."
-    numProcs=$1
-    numNodes=$2
+    CASE=$1
+    numProcs=$2
+    numNodes=$3
 
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")
-    sed -i "s/numberOfSubdomains  6;/numberOfSubdomains  $totalSubdomains;/" /data/openfoam10/benchmark/system/decomposeParDict
-    sed -i "s/decomposer      hierarchical;/method          scotch;/" /data/openfoam10/benchmark/system/decomposeParDict
-    sed -i "s/distributor     ptscotch;//" /data/openfoam10/benchmark/system/decomposeParDict
+    sed -i "s/numberOfSubdomains  6;/numberOfSubdomains  $totalSubdomains;/" $CASE/system/decomposeParDict
+    sed -i "s/decomposer      hierarchical;/method          scotch;/" $CASE/system/decomposeParDict
+    sed -i "s/distributor     ptscotch;//" $CASE/system/decomposeParDict
 }
 
-updateBlockMesh()
+function updateBlockMesh()
 {
     echo "Updating the blockMeshDict file..."
-    scaling=$1
+    CASE=$1
+    scaling=$2
     NX=$(perl -e "print int($scaling*20+0.99)")
     NY=$(perl -e "print int($scaling*8+0.99)")
     NZ=$(perl -e "print int($scaling*8+0.99)")
-    sed -i "s/    hex (0 1 2 3 4 5 6 7) (20 8 8) simpleGrading (1 1 1)/    hex (0 1 2 3 4 5 6 7) ($NX $NY $NZ) simpleGrading (1 1 1)/" /data/openfoam10/benchmark/system/blockMeshDict
+    sed -i "s/    hex (0 1 2 3 4 5 6 7) (20 8 8) simpleGrading (1 1 1)/    hex (0 1 2 3 4 5 6 7) ($NX $NY $NZ) simpleGrading (1 1 1)/" $CASE/system/blockMeshDict
 }
 
-updateSnappyHexMeshDict()
+function updateSnappyHexMeshDict()
 {
     echo "Updating the snappyHexMeshDict..."
+    CASE=$1
     maxGlobalCells=$(($(getNumberOfProcessors)*2))000000
-    sed -i "s/    maxLocalCells 100000;/    maxLocalCells 150000;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
-    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $maxGlobalCells;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
-    sed -i "s/    maxLoadUnbalance 0.10;/    maxLoadUnbalance 0.01;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
-    sed -i "s/            level (5 6);/            level (5 7);/" /data/openfoam10/benchmark/system/snappyHexMeshDict
-    sed -i "s/            level   4;/            level   5;/" /data/openfoam10/benchmark/system/snappyHexMeshDict
+    # sed -i "s/addLayers       true;/addLayers       false;/" $CASE/system/snappyHexMeshDict
+    sed -i "s/    maxLocalCells 100000;/    maxLocalCells 1500000;/" $CASE/system/snappyHexMeshDict
+    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $maxGlobalCells;/" $CASE/system/snappyHexMeshDict
+    sed -i "s/    maxLoadUnbalance 0.10;/    maxLoadUnbalance 0.01;/" $CASE/system/snappyHexMeshDict
+    sed -i "s/            level (5 6);/            level (5 7);/" $CASE/system/snappyHexMeshDict
+    # sed -i "s/            level   4;/            level   5;/" $CASE/system/snappyHexMeshDict
 }
 
-runBlockMesh()
+function runBlockMesh()
 {
     echo "Running blockmesh"
-    cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz /data/openfoam10/benchmark/constant/geometry/
-    surfaceFeatures > log.surfaceFeatures
-    blockMesh > log.blockMesh
+    CASE=$1
+    cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz $CASE/constant/geometry/
+    surfaceFeatures > log.surfaceFeatures 2>&1
+    blockMesh > log.blockMesh 2>&1
 }
 
-runDecomposePar()
+function runDecomposePar()
 {
     echo "Running decomposePar"
-    decomposePar -copyZero > /data/openfoam10/benchmark/log.decomposePar
+    CASE=$1
+    decomposePar -copyZero > $CASE/log.decomposePar 2>&1
 }
 
-runSnappyHexMesh()
+function runSnappyHexMesh()
 {
     echo "Running snappyHexMesh"
-    INTERCONNECT=$1
-    runParallelUsingInterface $INTERCONNECT snappyHexMesh -overwrite
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT snappyHexMesh -overwrite
 }
 
-runPotentialFoam()
+function runRenumberMesh()
+{
+    echo "Running renumberMesh"
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT renumberMesh -overwrite
+}
+
+function runCheckMesh()
+{
+    echo "Running checkMesh"
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT checkMesh
+}
+
+function runPotentialFoam()
 {
     echo "Running potentialFoam"
-    INTERCONNECT=$1
-    runParallelUsingInterface $INTERCONNECT potentialFoam
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT potentialFoam
 }
 
-runSimpleFoam()
+function runSimpleFoam()
 {
     echo "Running simpleFoam"
-    INTERCONNECT=$1
-    runParallelUsingInterface $INTERCONNECT simpleFoam
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
 }
 
-runParallelUsingInterface()
+function runParallelUsingInterface()
 {
+    CASE=$1
+    shift
     INTERCONNECT=$1
     shift
     APP=$1
     shift
     NUM_PROCS=$(getNumberOfProcessors)
-    mpirun -np $NUM_PROCS $APP "$@" -parallel > /data/openfoam10/benchmark/log.$APP 2>&1
+
+    if [[ $NUM_PROCS == 1 ]]; then
+        $APP "$@" > $CASE/log.$APP 2>&1
+    else
+
+        mpiInterfaceOptions=""
+
+        if [[ -f /etc/JARVICE/cores ]]; then
+            # Now need to see if we are running locally...
+            if [[ $(cat /etc/JARVICE/nodes) == JARVICE ]]; then
+                mpiHostOptions=""
+            else
+                mpiHostOptions="--hostfile /etc/JARVICE/nodes"
+            fi
+        else
+            mpiHostOptions=""
+        fi
+
+        mpiSetOptions="--verbose \
+        --nooversubscribe \
+        --display-map \
+        --display-allocation \
+        --bind-to core \
+        --map-by numa:PE=1 \
+        --report-bindings"
+        mpirun $mpiInterfaceOptions $mpiHostOptions -np $NUM_PROCS $mpiSetOptions $APP "$@" -parallel > $CASE/log.$APP 2>&1
+    fi
 }

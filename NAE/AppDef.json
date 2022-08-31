@@ -165,11 +165,12 @@
         "-interconnect": {
           "values": [
             "1",
-            "2"
+            "2",
+            "3"
           ],
           "required": true,
           "type": "selection",
-          "name": "MPI Connector Type"
+          "name": "MPI Connector Type (Not Used)"
         }
       }
     }
