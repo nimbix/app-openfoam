@@ -96,7 +96,9 @@ done
 
 # Copy the motorbike tutorial to working directory
 CASE="/data/openfoam10/benchmark"
-rm -r $CASE
+if [[ -d "$CASE" ]]; then
+  rm -r $CASE
+fi
 mkdir -p $CASE
 cd $CASE
 source /usr/local/scripts/openfoam-benchmark-helper.sh
@@ -137,6 +139,9 @@ SOLVER_SCORE=$(perl -e "print int(86400000.0/$dt_solver+0.99)")
 if [[ ! -f "../benchmark.csv" ]]; then
   echo "NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE" > ../benchmark.csv
 fi
+
+# Show potentialfoam in terminal
+cat $CASE/log.potentialFoam
 
 echo "NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE"
 echo "$NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $MESH_BUILD_SCORE, $SOLVER_SCORE"

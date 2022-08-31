@@ -140,6 +140,7 @@ function runSimpleFoam()
     runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
 }
 
+# https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/#Appendix
 function runParallelUsingInterface()
 {
     CASE=$1
@@ -158,7 +159,7 @@ function runParallelUsingInterface()
 
         if [[ -f /etc/JARVICE/cores ]]; then
             # Now need to see if we are running locally...
-            if [[ $(cat /etc/JARVICE/nodes) == JARVICE ]]; then
+            if [[ $(cat /etc/JARVICE/cores) == JARVICE ]]; then
                 mpiHostOptions=""
             else
                 mpiHostOptions="--hostfile /etc/JARVICE/nodes"
