@@ -25,7 +25,7 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
-FROM ubuntu:22.04
+FROM ubuntu:focal
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
@@ -52,8 +52,11 @@ RUN add-apt-repository http://dl.openfoam.org/ubuntu
 
 # add OpenFOAM packages, with ParaView
 RUN apt-get -y update && \
-    apt-get -y install openfoam10 && \
+    apt-get -y install bc openfoam10 && \
     apt-get clean && rm -rf /var/lib/apt/*
+
+# Replace custom foamJob file with one provided by openfoam
+COPY buildScripts/foamJob /opt/openfoam10/bin
 
 COPY scripts /usr/local/scripts
 

@@ -26,18 +26,44 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
+#
+# This script runs the motorbike steady-state example at differing sizes and
+# MPI interfaces.
 
 # Source the JARVICE job environment variables
 [[ -r /etc/JARVICE/jobenv.sh ]] && source /etc/JARVICE/jobenv.sh
 [[ -r /etc/JARVICE/jobinfo.sh ]] && source /etc/JARVICE/jobinfo.sh
 
-source /usr/local/scripts/openfoam-mpi-setup.sh
+# Wait for slaves...max of 60 seconds
+SLAVE_CHECK_TIMEOUT=60
+TOOLSDIR="/usr/local/JARVICE/tools/bin"
+${TOOLSDIR}/python_ssh_test ${SLAVE_CHECK_TIMEOUT}
+ERR=$?
+if [[ ${ERR} -gt 0 ]]; then
+  echo "One or more slaves failed to start" 1>&2
+  exit ${ERR}
+fi
 
-# create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam10/run
+# start SSHd
+if [[ -x /usr/sbin/sshd ]]; then
+  sudo service ssh start
+fi
 
-# Add a desktop shortcut for the paraFoam viewer
-mkdir -p $HOME/Desktop
-cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
+# Detect AWS and its EFA provider for the OFI fabric
+[[ $JARVICE_MPI_PROVIDER == efa ]] && export EFA_ACTIVE=1
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam10/run
+# Default to TCP provider if nothing else detected
+[[ -z "$JARVICE_MPI_PROVIDER" ]] && JARVICE_MPI_PROVIDER=tcp || true
+
+# Select the MPI variant
+if [ "$JARVICE_MPI_CMA" != "true" ]; then
+  export OMPI_MCA_btl_vader_single_copy_mechanism=none
+fi
+
+if [[ -n $EFA_ACTIVE ]]; then
+  echo "INFO: using EFA for OpenMPI"
+  export FI_EFA_FORK_SAFE=1
+  export MPIRUN='/opt/JARVICE/openmpi/bin/mpirun'
+else
+  export MPIRUN='mpirun'
+fi

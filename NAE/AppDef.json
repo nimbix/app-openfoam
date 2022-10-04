@@ -130,6 +130,55 @@
           "name": "Solver"
         }
       }
+    },
+    "Benchmark": {
+      "path": "/usr/local/scripts/openfoam-benchmark.sh",
+      "interactive": false,
+      "name": "OpenFOAM Benchmark",
+      "description": "Run OpenFOAM&reg; benchmark using an example file",
+      "parameters": {
+        "-num_procs": {
+          "value": 0,
+          "min": 0,
+          "max": 2048,
+          "required": true,
+          "type": "INT",
+          "name": "Number of processes per node to use (0 is all)."
+        },
+        "-num_nodes": {
+          "value": 0,
+          "min": 0,
+          "max": 2048,
+          "type": "INT",
+          "required": true,
+          "name": "Number of nodes to use (0 is all)"
+        },
+        "-numberOfCells": {
+          "value": 8000,
+          "min": 1000,
+          "max": 100000000000000,
+          "type": "INT",
+          "required": true,
+          "name": "Desired number of cells in mesh"
+        },
+        "-interconnect": {
+          "values": [
+            "ib",
+            "ethernet"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "MPI Connector Type"
+        },
+        "-benchmark_case": {
+          "values": [
+            "cavity"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "Benchmark Case"
+        }
+      }
     }
   },
   "image": {

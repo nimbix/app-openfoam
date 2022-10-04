@@ -26,6 +26,9 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
+#
+# This script runs the motorbike steady-state example at differing sizes and
+# MPI interfaces.
 
 # Source the JARVICE job environment variables
 [[ -r /etc/JARVICE/jobenv.sh ]] && source /etc/JARVICE/jobenv.sh
@@ -33,11 +36,71 @@
 
 source /usr/local/scripts/openfoam-mpi-setup.sh
 
-# create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam10/run
+set -e
 
-# Add a desktop shortcut for the paraFoam viewer
-mkdir -p $HOME/Desktop
-cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
+# parse command line
+NUM_PROCS="0"
+NUM_NODES="0"
+NUMBEROFCELLS="8000"
+INTERCONNECT='ib'
+BENCHMARK_CASE='cavity'
 
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam10/run
+while [[ -n "$1" ]]; do
+  case "$1" in
+  -num_procs)
+    shift
+    if [[ $1 == "0" ]]; then
+      # Need to get all available cores per node -> AllCORES / ALLNODES
+      NUMNODES=$(cat /etc/JARVICE/nodes | wc -l)
+      NUMCORES=$(cat /etc/JARVICE/cores | wc -l)
+      NUM_PROCS=$((NUMCORES/NUMNODES))
+    else
+      NUM_PROCS="$1"
+    fi
+    ;;
+  -num_nodes)
+    shift
+    if [[ $1 == "0" ]]; then
+      # Need to get all available nodes
+      NUM_NODES=$(cat /etc/JARVICE/nodes | wc -l)
+    else
+      NUM_NODES="$1"
+    fi
+    ;;
+  -numberOfCells)
+    shift
+    NUMBEROFCELLS="$1"
+    ;;
+  -interconnect)
+    shift
+    INTERCONNECT="$1"
+    ;;
+  -benchmark_case)
+    shift
+    BENCHMARK_CASE="$1"
+    ;;
+  *)
+    echo "Invalid argument: $1" >&2
+    exit 1
+    ;;
+  esac
+  shift
+done
+
+# Copy the motorbike tutorial to working directory
+[[ -z "$JOB_NAME" ]] && JOB_NAME="local" || true
+CASE="/data/openfoam10/benchmark-${JOB_NAME}"
+if [[ -d "$CASE" ]]; then
+  rm -r $CASE
+fi
+mkdir -p $CASE
+cd $CASE
+
+touch $CASE/CFD.foam
+[[ "$JOB_NAME" == "local" ]] && echo "127.0.0.1" > hostfile || true
+
+if [[ $BENCHMARK_CASE == 'motorbike' ]]; then
+  exec /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+else
+  exec /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+fi
