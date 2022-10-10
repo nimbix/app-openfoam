@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #------------------------------------------------------------------------------
 # =========                 |
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
@@ -89,7 +89,7 @@ findExec() {
 # Main script
 #~~~~~~~~~~~~
 unset parallelOpt screenOpt waitOpt mpiRunCmd
-
+. /usr/local/scripts/openfoam-mpi-setup.sh
 mpiRunCmd="not set"
 # Parse options
 while [ "$#" -gt 0 ]

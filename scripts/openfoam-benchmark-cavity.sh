@@ -90,9 +90,9 @@ function updateControlDict()
     N=$(perl -e "print int($scaling*20+0.99)")
     dx=$(perl -e "print $x/$N")
 
-    # Calculate the time step needed to hit a 0.5 CFL number
-    # CFL = u * dt/dx -> 0.5 = 1.0 * dt / dx -> dt = 0.5*1.0*dx -> dt = 0.5*dx
-    dt=$(perl -e "print $dx*0.5")
+    # Calculate the time step needed to hit a 0.1 CFL number
+    # CFL = u * dt/dx -> 0.1 = 1.0 * dt / dx -> dt = 0.1*1.0*dx -> dt = 0.1*dx
+    dt=$(perl -e "print $dx*0.1")
     numSteps=30 # $(perl -e "print 10.0/0.005")
     endTime=$(perl -e "print $dt*$numSteps")
 
