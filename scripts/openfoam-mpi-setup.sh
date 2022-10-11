@@ -34,20 +34,20 @@
 [[ -r /etc/JARVICE/jobenv.sh ]] && source /etc/JARVICE/jobenv.sh
 [[ -r /etc/JARVICE/jobinfo.sh ]] && source /etc/JARVICE/jobinfo.sh
 
-# Wait for slaves...max of 60 seconds
-SLAVE_CHECK_TIMEOUT=60
-TOOLSDIR="/usr/local/JARVICE/tools/bin"
-${TOOLSDIR}/python_ssh_test ${SLAVE_CHECK_TIMEOUT}
-ERR=$?
-if [[ ${ERR} -gt 0 ]]; then
-  echo "One or more slaves failed to start" 1>&2
-  exit ${ERR}
-fi
+# # Wait for slaves...max of 60 seconds
+# SLAVE_CHECK_TIMEOUT=60
+# TOOLSDIR="/usr/local/JARVICE/tools/bin"
+# ${TOOLSDIR}/python_ssh_test ${SLAVE_CHECK_TIMEOUT}
+# ERR=$?
+# if [[ ${ERR} -gt 0 ]]; then
+#   echo "One or more slaves failed to start" 1>&2
+#   exit ${ERR}
+# fi
 
-# start SSHd
-if [[ -x /usr/sbin/sshd ]]; then
-  sudo service ssh start
-fi
+# # start SSHd
+# if [[ -x /usr/sbin/sshd ]]; then
+#   sudo service ssh start
+# fi
 
 # Detect AWS and its EFA provider for the OFI fabric
 [[ $JARVICE_MPI_PROVIDER == efa ]] && export EFA_ACTIVE=1
