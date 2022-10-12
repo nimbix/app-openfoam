@@ -243,10 +243,17 @@ then
         #
         # Add EFA specific settings here
         #
-        if [ "$EFA_ACTIVE" = "1" ]; then
+
+        if [ "$JARVICE_MPI_PROVIDER" == "efa" ]; then
+            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
             mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
-            # mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
-            mpiopts="$mpiopts --mca btl tcp,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
+            mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
+            mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
+        fi
+
+        if [ "$JARVICE_MPI_PROVIDER" = "verbs" ]; then
+            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
+            mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
         fi
 
         ;;

@@ -25,13 +25,50 @@
 # The views and conclusions contained in the software and documentation are
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
+
+# Load jarvice_mpi image as JARVICE_MPI
+FROM us-docker.pkg.dev/jarvice/images/jarvice_mpi:4.1 as JARVICE_MPI
+
+# Multistage to optimise, as image does not need to contain jarvice_mpi
+# components, these are side loaded during job containers init.
+FROM ubuntu:focal as buffer
+
+# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
+ARG SERIAL_NUMBER
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221011.1000}
+
+# Grab jarvice_mpi from JARVICE_MPI
+COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
+
+# Add dependencies
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN apt-get install -y build-essential cmake nano git ca-certificates wget
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y flex libfl-dev bison zlib1g-dev libboost-system-dev libboost-thread-dev libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
+RUN apt-get install -y python3-dev python3-pip git bc scotch ptscotch libfltk1.3-dev libocct-data-exchange-dev libocct-foundation-dev libocct-modeling-algorithms-dev libocct-modeling-data-dev libocct-ocaf-dev libocct-visualization-dev
+
+# Add OpenFOAM Repo
+WORKDIR /opt/OpenFOAM
+RUN wget -O - http://dl.openfoam.org/source/10 | tar xz
+RUN wget -O - http://dl.openfoam.org/third-party/10 | tar xz
+RUN mv OpenFOAM-10-version-10 OpenFOAM-10
+RUN mv ThirdParty-10-version-10 ThirdParty-10
+
+# Build OpenFOAM with JARVICE MPI
+SHELL ["/bin/bash", "-c"]
+RUN source /opt/JARVICE/jarvice_mpi.sh && \
+    source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc && \
+    cd /opt/OpenFOAM/OpenFOAM-10 && \
+    ./Allwmake -j24 -q
+
+# Main Program
 FROM ubuntu:focal
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20220824.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221011.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -44,19 +81,14 @@ RUN apt-get -y update && \
         https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
         | bash -s -- --setup-nimbix-desktop
 
-#RUN mkdir -p /usr/local/src
+RUN apt-get install -y paraview scotch ptscotch
 
-# Add OpenFOAM repo
-RUN sh -c "wget -O - https://dl.openfoam.org/gpg.key | apt-key add -"
-RUN add-apt-repository http://dl.openfoam.org/ubuntu
-
-# add OpenFOAM packages, with ParaView
-RUN apt-get -y update && \
-    apt-get -y install bc openfoam10 && \
-    apt-get clean && rm -rf /var/lib/apt/*
+# Copy over files
+COPY --from=buffer /opt/OpenFOAM/OpenFOAM-10 /opt/OpenFOAM/OpenFOAM-10
+COPY --from=buffer /opt/OpenFOAM/ThirdParty-10 /opt/OpenFOAM/ThirdParty-10
 
 # Replace custom foamJob file with one provided by openfoam
-COPY buildScripts/foamJob /opt/openfoam10/bin
+COPY buildScripts/foamJob /opt/OpenFOAM/OpenFOAM-10/bin
 
 COPY scripts /usr/local/scripts
 

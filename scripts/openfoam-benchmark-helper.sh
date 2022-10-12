@@ -32,9 +32,9 @@
 set -e
 
 # Source the OpenFOAM bashrc file
-if [[ -f /opt/openfoam10/etc/bashrc ]]; then
+if [[ -f /opt/OpenFOAM/OpenFOAM-10/etc/bashrc ]]; then
   echo "Sourcing OpenFOAM environment"
-  source /opt/openfoam10/etc/bashrc || return
+  source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
   exit 1

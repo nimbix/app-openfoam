@@ -32,7 +32,7 @@
 set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
-cp -r /opt/openfoam10/tutorials/incompressible/simpleFoam/motorBike/* .
+cp -r /opt/OpenFOAM/OpenFOAM-10/tutorials/incompressible/simpleFoam/motorBike/* .
 
 function updateDecomposePar()
 {
