@@ -54,12 +54,22 @@ RUN wget -O - http://dl.openfoam.org/third-party/10 | tar xz
 RUN mv OpenFOAM-10-version-10 OpenFOAM-10
 RUN mv ThirdParty-10-version-10 ThirdParty-10
 
+# Add extra compile options
+#   -flto for link time optimizations
+RUN cd /opt/OpenFOAM/OpenFOAM-10/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" wmake/.)
+RUN cd /opt/OpenFOAM/OpenFOAM-10/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" etc/.)
+
 # Build OpenFOAM with JARVICE MPI
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/JARVICE/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-10 && \
     ./Allwmake -j24 -q
+
+# Remove .o files and .dep files
+RUN cd /opt/OpenFOAM/OpenFOAM-10 && \
+    find platforms/*/applications platforms/*/src -name "*.o" | xargs rm && \
+    find platforms/*/applications platforms/*/src -name "*.dep" | xargs rm
 
 # Main Program
 FROM ubuntu:focal
