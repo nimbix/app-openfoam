@@ -89,7 +89,7 @@ findExec() {
 # Main script
 #~~~~~~~~~~~~
 unset parallelOpt screenOpt waitOpt mpiRunCmd
-. /usr/local/scripts/openfoam-mpi-setup.sh
+# . /usr/local/scripts/openfoam-mpi-setup.sh
 mpiRunCmd="not set"
 # Parse options
 while [ "$#" -gt 0 ]
