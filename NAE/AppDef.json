@@ -3,11 +3,12 @@
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
   "author": "OpenCFD Ltd",
   "licensed": true,
+  "appdefversion": 2,
   "classifications": [
     "Simulation/Computational Fluid Dynamics"
   ],
   "machines": [
-    "na*"
+    "n*"
   ],
   "vault-types": [
     "FILE"
@@ -16,10 +17,11 @@
     "GUI": {
       "path": "/usr/local/scripts/start-openfoam-viz.sh",
       "interactive": true,
+      "desktop": true,
       "name": "OpenFOAM GUI",
       "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam10/run ($FOAM_RUN)",
       "machines": [
-        "na*"
+        "n*"
       ],
       "parameters": {}
     },

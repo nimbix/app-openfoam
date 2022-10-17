@@ -31,11 +31,11 @@ FROM us-docker.pkg.dev/jarvice/images/jarvice_mpi:4.1 as JARVICE_MPI
 
 # Multistage to optimise, as image does not need to contain jarvice_mpi
 # components, these are side loaded during job containers init.
-FROM ubuntu:focal as buffer
+FROM ubuntu:jammy as buffer
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221011.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221017.1000}
 
 # Grab jarvice_mpi from JARVICE_MPI
 COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
@@ -72,13 +72,13 @@ RUN cd /opt/OpenFOAM/OpenFOAM-10 && \
     find platforms/*/applications platforms/*/src -name "*.dep" | xargs rm
 
 # Main Program
-FROM ubuntu:focal
+FROM ubuntu:jammy
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
-ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221011.1000}
+ENV SERIAL_NUMBER ${SERIAL_NUMBER:-20221017.1000}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -86,10 +86,10 @@ WORKDIR /tmp
 
 # Install image-common tools and desktop
 RUN apt-get -y update && \
-    apt-get -y install wget gnupg curl software-properties-common && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl htop --no-install-recommends && \
     curl -H 'Cache-Control: no-cache' \
-        https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
-        | bash -s -- --setup-nimbix-desktop
+        https://raw.githubusercontent.com/nimbix/jarvice-desktop/master/install-nimbix.sh \
+        | bash
 
 RUN apt-get install -y paraview scotch ptscotch
 
@@ -106,4 +106,4 @@ COPY NAE/screenshot.png /etc/NAE/screenshot.png
 COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 
 COPY NAE/AppDef.json /etc/NAE/AppDef.json
-RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
+# RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
