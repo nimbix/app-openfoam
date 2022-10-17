@@ -39,5 +39,5 @@ mkdir -p /data/openfoam10/run
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
 cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
-echo "source /opt/openfoam10/etc/bashrc" >> $HOME/.bashrc
+# echo "source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc" >> $HOME/.bashrc
 exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam10/run

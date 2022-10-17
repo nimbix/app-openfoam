@@ -32,7 +32,7 @@
 set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
-cp -r /opt/openfoam10/tutorials/incompressible/pisoFoam/RAS/cavityCoupledU/* .
+cp -r /opt/OpenFOAM/OpenFOAM-10/tutorials/incompressible/pisoFoam/RAS/cavityCoupledU/* .
 
 function updateDecomposePar()
 {
@@ -41,7 +41,7 @@ function updateDecomposePar()
     numProcs=$2
     numNodes=$3
 
-    cp /opt/openfoam10/tutorials/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    cp /opt/OpenFOAM/OpenFOAM-10/tutorials/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
 
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")

@@ -27,7 +27,4 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 
-# OpenFOAM config dir
-. /opt/openfoam10/etc/bashrc
-
-paraFoam
+paraview
