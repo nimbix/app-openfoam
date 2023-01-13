@@ -32,9 +32,9 @@
 set -e
 
 # Source the OpenFOAM bashrc file
-if [[ -f /opt/OpenFOAM/OpenFOAM-10/etc/bashrc ]]; then
+if [[ -f /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc ]]; then
   echo "Sourcing OpenFOAM environment"
-  source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc || return
+  source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc || return
 else
   echo "ERROR: OpenFOAM environment unavailable"
   exit 1
@@ -70,7 +70,7 @@ function runRenumberMesh()
     echo "Running renumberMesh"
     CASE=$1
     INTERCONNECT=$2
-    runParallelUsingInterface $CASE $INTERCONNECT renumberMesh -overwrite
+    runParallelUsingInterface $CASE $INTERCONNECT renumberMesh
 }
 
 function runCheckMesh()

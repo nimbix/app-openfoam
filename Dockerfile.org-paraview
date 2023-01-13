@@ -1,0 +1,134 @@
+# Copyright (c) 2022, Nimbix, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Nimbix, Inc.
+
+# Openfoam Version
+ARG OPENFOAM_VERSION=10
+
+# Serial Number
+ARG SERIAL_NUMBER=20221130.1000
+
+# Load jarvice_mpi image as JARVICE_MPI
+FROM us-docker.pkg.dev/jarvice/images/jarvice_mpi:4.1 as JARVICE_MPI
+
+# Multistage to optimise, as image does not need to contain jarvice_mpi
+# components, these are side loaded during job containers init.
+FROM ubuntu:focal as buffer
+
+# Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
+ARG SERIAL_NUMBER
+ENV SERIAL_NUMBER=${SERIAL_NUMBER}
+
+ARG OPENFOAM_VERSION
+ENV OPENFOAM_VERSION=${OPENFOAM_VERSION}
+
+# Grab jarvice_mpi from JARVICE_MPI
+COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
+
+# Add dependencies
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        bc \
+        bison \
+        build-essential \
+        ca-certificates \
+        cmake \
+        curl \
+        flex \
+        git \
+        gnuplot \
+        htop \
+        libboost-system-dev \
+        libboost-thread-dev \
+        libfl-dev \
+        libncurses-dev \
+        libreadline-dev \
+        libqt5help5 \
+        libqt5svg5-dev \
+        libqt5x11extras5-dev \
+        libtbb-dev \
+        libxt-dev \
+        nano \
+        ptscotch \
+        qt5-default \
+        qttools5-dev \
+        qtxmlpatterns5-dev-tools \
+        scotch \
+        tzdata \
+        wget \
+        zlib1g-dev
+
+# Add OpenFOAM Repo
+WORKDIR /opt/OpenFOAM
+RUN wget -O - http://dl.openfoam.org/source/${OPENFOAM_VERSION} | tar xz
+RUN wget -O - http://dl.openfoam.org/third-party/${OPENFOAM_VERSION} | tar xz
+RUN mv OpenFOAM-${OPENFOAM_VERSION}-version-${OPENFOAM_VERSION} OpenFOAM-${OPENFOAM_VERSION}
+RUN mv ThirdParty-${OPENFOAM_VERSION}-version-${OPENFOAM_VERSION} ThirdParty-${OPENFOAM_VERSION}
+
+# Add extra compile options
+#   -flto for link time optimizations
+RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" wmake/.)
+RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" etc/.)
+
+SHELL ["/bin/bash", "-c"]
+
+# Need to build paraview...
+RUN source /opt/JARVICE/jarvice_mpi.sh && \
+    source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
+    cd /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} && \
+    /usr/bin/bash ./makeParaView -mpi
+
+# Build OpenFOAM with JARVICE MPI
+RUN source /opt/JARVICE/jarvice_mpi.sh && \
+    source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
+    cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
+    ./Allwmake -j24 -q
+
+# Remove .o files and .dep files
+RUN cd /opt/OpenFOAM/ && \
+    find . -name "*.o" | xargs rm && \
+    find . -name "*.dep" | xargs rm
+
+# Install image-common tools and desktop
+RUN cd /tmp && apt-get -y update && \
+    apt-get -y install wget gnupg curl software-properties-common && \
+    curl -H 'Cache-Control: no-cache' \
+        https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
+        | bash -s -- --setup-nimbix-desktop
+
+# Replace custom foamJob file with one provided by openfoam
+COPY buildScripts/foamJob /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin
+
+COPY scripts /usr/local/scripts
+
+RUN echo "OPENFOAM_VERSION=${OPENFOAM_VERSION}" >> /etc/environment
+
+COPY NAE/screenshot.png /etc/NAE/screenshot.png
+COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
+
+COPY NAE/AppDef.json /etc/NAE/AppDef.json
+RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate

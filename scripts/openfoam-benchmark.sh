@@ -44,6 +44,7 @@ NUM_NODES="0"
 NUMBEROFCELLS="8000"
 INTERCONNECT='ib'
 BENCHMARK_CASE='cavity'
+KEEP_RESULTS='false'
 
 while [[ -n "$1" ]]; do
   case "$1" in
@@ -79,6 +80,9 @@ while [[ -n "$1" ]]; do
     shift
     BENCHMARK_CASE="$1"
     ;;
+  -keepResults)
+    KEEP_RESULTS='true'
+    ;;
   *)
     echo "Invalid argument: $1" >&2
     exit 1
@@ -89,10 +93,11 @@ done
 
 # Copy the motorbike tutorial to working directory
 [[ -z "$JOB_NAME" ]] && JOB_NAME="local" || true
-CASE="/data/openfoam10/benchmark-${JOB_NAME}"
+CASE="/data/openfoam-${OPENFOAM_VERSION}/benchmark-${JOB_NAME}"
 if [[ -d "$CASE" ]]; then
   rm -r $CASE
 fi
+STARTING_DIRECTORY=${PWD}
 mkdir -p $CASE
 cd $CASE
 
@@ -101,6 +106,13 @@ touch $CASE/CFD.foam
 
 if [[ $BENCHMARK_CASE == 'motorbike' ]]; then
   exec /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
-else
+elif [[ $BENCHMARK_CASE == 'cavity' ]]; then
   exec /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
+  exec /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+fi
+
+if [[ ${KEEP_RESULTS} == 'false' ]]; then
+  cd ${STARTING_DIRECTORY}
+  rm -r $CASE
 fi

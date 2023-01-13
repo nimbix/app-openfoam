@@ -1,5 +1,5 @@
 {
-  "name": "OpenFOAM&reg; 10",
+  "name": "OpenFOAM&reg; v2210",
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
   "author": "OpenCFD Ltd",
   "licensed": true,
@@ -7,7 +7,7 @@
     "Simulation/Computational Fluid Dynamics"
   ],
   "machines": [
-    "na*"
+    "n*"
   ],
   "vault-types": [
     "FILE"
@@ -19,7 +19,7 @@
       "name": "OpenFOAM GUI",
       "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam10/run ($FOAM_RUN)",
       "machines": [
-        "na*"
+        "n*"
       ],
       "parameters": {}
     },
@@ -172,7 +172,8 @@
         },
         "-benchmark_case": {
           "values": [
-            "cavity"
+            "cavity",
+            "cavity-simple"
           ],
           "required": true,
           "type": "selection",

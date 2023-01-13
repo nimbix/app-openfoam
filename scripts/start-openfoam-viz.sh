@@ -34,10 +34,10 @@
 source /usr/local/scripts/openfoam-mpi-setup.sh
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam10/run
+mkdir -p /data/openfoam/run
 
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
 cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
-# echo "source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc" >> $HOME/.bashrc
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam10/run
+# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
+exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam/run

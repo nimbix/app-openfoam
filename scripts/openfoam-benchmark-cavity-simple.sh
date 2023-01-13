@@ -68,9 +68,6 @@ function updateBoundaryConditions()
 {
     echo "Updating boundary conditions"
     CASE=$1
-    # for file in $CASE/0/*; do
-    #     echo "\tUpdating $file"
-    # done
 
     sed -i "s/        type            empty;/        type            epsilonWallFunction;\\n        value           uniform 0.000765;/" $CASE/0/epsilon
     sed -i "s/        type            empty;/        type            kqRWallFunction;\\n        value           uniform 0.00325;/" $CASE/0/k
@@ -85,19 +82,10 @@ function updateControlDict()
     echo "Updating controlDict file"
     CASE=$1
     SCALING=$2
-
-    x=0.1
-    N=$(perl -e "print int($scaling*20+0.99)")
-    dx=$(perl -e "print $x/$N")
-
-    # Calculate the time step needed to hit a 0.1 CFL number
-    # CFL = u * dt/dx -> 0.1 = 1.0 * dt / dx -> dt = 0.1*1.0*dx -> dt = 0.1*dx
-    dt=$(perl -e "print $dx*0.1")
     numSteps=30 # $(perl -e "print 10.0/0.005")
-    endTime=$(perl -e "print $dt*$numSteps")
 
-    sed -i "s/endTime         10;/endTime         $endTime;/" $CASE/system/controlDict
-    sed -i "s/deltaT          0.005;/deltaT          $dt;/" $CASE/system/controlDict
+    sed -i "s/endTime         10;/endTime         ${numSteps};/" $CASE/system/controlDict
+    sed -i "s/deltaT          0.005;/deltaT          1;/" $CASE/system/controlDict
 }
 
 function updateFvSolution()
@@ -111,19 +99,29 @@ function updateFvSolution()
     sed -i "s/        tolerance       (1e-05 1e-05 1e-05);/        tolerance       1e-05;/" $CASE/system/fvSolution
     sed -i "s/        relTol          (0 0 0);/        relTol          0;/" $CASE/system/fvSolution
 
-    # Add nCellsInCoarsestLevel value to pressure (default is 10...)
-    # sed -i -e '/        smoother        GaussSeidel/a\' -e '        nCellsInCoarsestLevel 200;' $CASE/system/fvSolution
     # Use FDIC + PCG
     sed -i "s/        solver          GAMG;/        solver          PCG;\\n        preconditioner  FDIC;/" $CASE/system/fvSolution
 
-    # Change pressure solver to PCG solver          smoothSolver;
-    # sed -i "/        smoother        GaussSeidel;/d" $CASE/system/fvSolution
-    # sed -i "s/        solver          GAMG;/        solver          PCG;\n        preconditioner  DIC;/" $CASE/system/fvSolution
+    # Use DILUPBiCGStab instead of smoothSolver
+    sed -i "s/        solver          smoothSolver;/        solver          PBiCGStab;\\n        preconditioner  DILU;/" $CASE/system/fvSolution
 
+    # Switch from PISO to SIMPLE
+    sed -i "s/PISO/SIMPLE/" $CASE/system/fvSolution
 
-    # # Change pressure solver to PBiCGStab
-    # sed -i "s/        solver          GAMG;/        solver    PBiCGStab;/" $CASE/system/fvSolution
-    # sed -i "s/        smoother        GaussSeidel;/        preconditioner  DIC;/" $CASE/system/fvSolution
+    # Add consistent yes after nNonOrthogonalCorrectors
+    sed -i "s/    nNonOrthogonalCorrectors 0;/    nNonOrthogonalCorrectors 0;\n    consistent yes;/" $CASE/system/fvSolution
+
+    # Add relaxation factors to the end of the file
+    echo "relaxationFactors" >> $CASE/system/fvSolution
+    echo "{" >> $CASE/system/fvSolution
+    echo "    p                   0.3;" >> $CASE/system/fvSolution
+    echo "    equations" >> $CASE/system/fvSolution
+    echo "    {" >> $CASE/system/fvSolution
+    echo "        U               0.9;" >> $CASE/system/fvSolution
+    echo "        k               0.7;" >> $CASE/system/fvSolution
+    echo "        epsilon         0.7;" >> $CASE/system/fvSolution
+    echo "    }" >> $CASE/system/fvSolution
+    echo "}" >> $CASE/system/fvSolution
 }
 
 CASE=$1
@@ -157,9 +155,9 @@ time runCheckMesh $CASE $INTERCONNECT
 echo ----------------------------------------------
 # time runPotentialFoam $CASE $INTERCONNECT
 # echo ----------------------------------------------
-echo "Running pisoFoam"
+echo "Running simpleFoam"
 stime=$(date '+%s%3N')
-time runParallelUsingInterface $CASE $INTERCONNECT pisoFoam
+time runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
 etime=$(date '+%s%3N')
 dt_solver=$((etime-stime))
 echo ----------------------------------------------
@@ -172,5 +170,5 @@ if [[ ! -f "../benchmark.csv" ]]; then
 fi
 
 echo "BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE"
-echo "Cavity, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE"
-echo "Cavity, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE" >> ../benchmark.csv
+echo "Cavity Simple, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE"
+echo "Cavity Simple, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE" >> ../benchmark.csv

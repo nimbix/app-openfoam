@@ -50,12 +50,14 @@ if [[ -x /usr/sbin/sshd ]]; then
 fi
 
 # OpenFOAM config dir
-FOAMETC=/opt/OpenFOAM/OpenFOAM-10/etc
+FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam10" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
-  ssh $i 'sed -i "1 i\source /opt/OpenFOAM/OpenFOAM-10/etc/bashrc" $HOME/.bashrc'
+  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam${OPENFOAM_VERSION}" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
+  ssh $i echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
 done
+
+# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
 
 # Detect AWS and its EFA provider for the OFI fabric
 [[ $JARVICE_MPI_PROVIDER == efa ]] && export EFA_ACTIVE=1
