@@ -30,10 +30,10 @@
 # OpenCFD Ltd -> com
 
 # Openfoam Version
-ARG OPENFOAM_VERSION=v2212
+ARG OPENFOAM_VERSION=v2306
 
 # Serial Number
-ARG SERIAL_NUMBER=20230612.1000
+ARG SERIAL_NUMBER=20230730.1000
 
 # Load jarvice_mpi image as JARVICE_MPI
 FROM us-docker.pkg.dev/jarvice/images/jarvice_mpi:4.1 as JARVICE_MPI
@@ -82,6 +82,7 @@ RUN apt-get update && \
         git \
         bc \
         scotch \
+        libscotch-dev \
         ptscotch \
         libfltk1.3-dev \
         libocct-data-exchange-dev \
@@ -91,10 +92,24 @@ RUN apt-get update && \
         libocct-ocaf-dev \
         libocct-visualization-dev
 
-# Add OpenFOAM Repo
+# Add OpenFOAM Repo (not available yet...)
 WORKDIR /opt/OpenFOAM
-RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/OpenFOAM-${OPENFOAM_VERSION}.tgz | tar xz
-RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tgz | tar xz
+# RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/OpenFOAM-${OPENFOAM_VERSION}.tgz | tar xz
+# RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tgz | tar xz
+RUN wget -O - https://develop.openfoam.com/Development/openfoam/-/archive/OpenFOAM-v2306/openfoam-OpenFOAM-v2306.tar.gz | tar xz
+RUN wget -O - https://develop.openfoam.com/Development/ThirdParty-common/-/archive/v2306/ThirdParty-common-v2306.tar.gz | tar xz
+RUN mv openfoam-OpenFOAM-v2306 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
+RUN mv ThirdParty-common-v2306 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
+RUN cd /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}; \
+    wget -O - https://gforge.inria.fr/frs/download.php/file/38352/scotch_6.1.0.tar.gz | tar xz; \
+    wget -O - https://github.com/KaHIP/KaHIP/archive/v3.15.tar.gz | tar xz; \
+    mv KaHIP-3.15 kahip-3.15; \
+    wget -O - https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz; \
+    wget -O - https://www.fftw.org/fftw-3.3.10.tar.gz | tar xz; \
+    wget -O - https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.8.3.tar.gz | tar xz; \
+    wget -O - https://github.com/CGAL/cgal/archive/refs/tags/releases/CGAL-4.14.3.tar.gz | tar xz; \
+    wget -O - https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz | tar xz; \
+    mv cgal-releases-CGAL-4.14.3 CGAL-4.14.3;
 
 # Add extra compile options
 #   -flto for link time optimizations
@@ -135,7 +150,7 @@ RUN apt-get -y update && \
         https://raw.githubusercontent.com/nimbix/jarvice-desktop/master/install-nimbix.sh \
         | bash
 
-RUN apt-get install -y paraview scotch ptscotch mousepad
+RUN apt-get install -y paraview scotch ptscotch mousepad bc libscotch-dev
 
 # Copy over files
 COPY --from=buffer --chmod=0777 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
@@ -154,3 +169,14 @@ COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 # Copy over the app image and the AppDef
 COPY NAE/AppDef-com.json /etc/NAE/AppDef.json
 RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
+
+
+# # # For testing locally
+# # Add nimbix user
+# RUN useradd --shell /bin/bash nimbix
+# RUN mkdir -p /home/nimbix/
+# RUN mkdir -p /data
+
+# # Have all files be owned by nimbix user
+# RUN chown -R nimbix:nimbix /home/nimbix
+# RUN chown -R nimbix:nimbix /data
