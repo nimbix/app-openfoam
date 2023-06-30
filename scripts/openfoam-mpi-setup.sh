@@ -34,26 +34,12 @@
 [[ -r /etc/JARVICE/jobenv.sh ]] && source /etc/JARVICE/jobenv.sh
 [[ -r /etc/JARVICE/jobinfo.sh ]] && source /etc/JARVICE/jobinfo.sh
 
-# Wait for slaves...max of 60 seconds
-SLAVE_CHECK_TIMEOUT=60
 TOOLSDIR="/usr/local/JARVICE/tools/bin"
-${TOOLSDIR}/python_ssh_test ${SLAVE_CHECK_TIMEOUT}
-ERR=$?
-if [[ ${ERR} -gt 0 ]]; then
-  echo "One or more slaves failed to start" 1>&2
-  exit ${ERR}
-fi
-
-# start SSHd
-if [[ -x /usr/sbin/sshd ]]; then
-  sudo service ssh start
-fi
 
 # OpenFOAM config dir
-FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
+export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "WM_PROJECT_USER_DIR=/data/openfoam${OPENFOAM_VERSION}" | sudo tee -a "$FOAMETC"/prefs.sh >/dev/null
   ssh $i echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
 done
 

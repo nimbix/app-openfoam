@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2022, Nimbix, Inc.
+# Copyright (c) 2023, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,11 @@
 source /usr/local/scripts/openfoam-mpi-setup.sh
 
 # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-mkdir -p /data/openfoam/run
+mkdir -p /data/openfoam-${OPENFOAM_VERSION}/run
 
 # Add a desktop shortcut for the paraFoam viewer
 mkdir -p $HOME/Desktop
 cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
-# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
-exec /usr/local/bin/nimbix_desktop xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam/run
+echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
+echo "alias paraFoam='paraFoam -builtin'" >> $HOME/.bashrc
+exec xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam-${OPENFOAM_VERSION}/run

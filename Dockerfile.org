@@ -1,4 +1,4 @@
-# Copyright (c) 2022, Nimbix, Inc.
+# Copyright (c) 2023, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,14 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 
+# "appdefversion": 2,
+# "desktop": true,
+
 # Openfoam Version
 ARG OPENFOAM_VERSION=10
 
 # Serial Number
-ARG SERIAL_NUMBER=20221201.1000
+ARG SERIAL_NUMBER=20230612.1000
 
 # Load jarvice_mpi image as JARVICE_MPI
 FROM us-docker.pkg.dev/jarvice/images/jarvice_mpi:4.1 as JARVICE_MPI
@@ -50,11 +53,6 @@ ENV OPENFOAM_VERSION=${OPENFOAM_VERSION}
 COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
 
 # Add dependencies
-# RUN apt-get update
-# RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-# RUN apt-get install -y build-essential cmake nano git ca-certificates wget
-# RUN DEBIAN_FRONTEND=noninteractive apt-get install -y flex libfl-dev bison zlib1g-dev libboost-system-dev libboost-thread-dev libopenmpi-dev openmpi-bin gnuplot libreadline-dev libncurses-dev libxt-dev
-# RUN apt-get install -y python3-dev python3-pip git bc scotch ptscotch libfltk1.3-dev libocct-data-exchange-dev libocct-foundation-dev libocct-modeling-algorithms-dev libocct-modeling-data-dev libocct-ocaf-dev libocct-visualization-dev
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         bc \
@@ -87,7 +85,6 @@ RUN apt-get update && \
         wget \
         zlib1g-dev
 
-
 # Add OpenFOAM Repo
 WORKDIR /opt/OpenFOAM
 RUN wget -O - http://dl.openfoam.org/source/${OPENFOAM_VERSION} | tar xz
@@ -105,7 +102,7 @@ SHELL ["/bin/bash", "-c"]
 RUN source /opt/JARVICE/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
-    ./Allwmake -j24 -q
+    ./Allwmake -j16 -q
 
 # Remove .o files and .dep files
 RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
@@ -130,16 +127,16 @@ WORKDIR /tmp
 
 # Install image-common tools and desktop
 RUN apt-get -y update && \
-    apt-get -y install wget gnupg curl software-properties-common && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl --no-install-recommends && \
     curl -H 'Cache-Control: no-cache' \
-        https://raw.githubusercontent.com/nimbix/image-common/master/install-nimbix.sh \
-        | bash -s -- --setup-nimbix-desktop
+        https://raw.githubusercontent.com/nimbix/jarvice-desktop/master/install-nimbix.sh \
+        | bash
 
-RUN apt-get install -y paraview scotch ptscotch
+RUN apt-get install -y paraview scotch ptscotch mousepad
 
 # Copy over files
-COPY --from=buffer /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
-COPY --from=buffer /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
+COPY --from=buffer --chmod=0777 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
+COPY --from=buffer --chmod=0777 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
 
 # Replace custom foamJob file with one provided by openfoam
 COPY buildScripts/foamJob.org /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin/foamJob
@@ -151,5 +148,5 @@ RUN echo "OPENFOAM_VERSION=${OPENFOAM_VERSION}" >> /etc/environment
 COPY NAE/screenshot.png /etc/NAE/screenshot.png
 COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 
-COPY NAE/AppDef.json /etc/NAE/AppDef.json
+COPY NAE/AppDef-org.json /etc/NAE/AppDef.json
 RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate

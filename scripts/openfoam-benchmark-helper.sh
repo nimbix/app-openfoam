@@ -70,7 +70,7 @@ function runRenumberMesh()
     echo "Running renumberMesh"
     CASE=$1
     INTERCONNECT=$2
-    runParallelUsingInterface $CASE $INTERCONNECT renumberMesh
+    runParallelUsingInterface $CASE $INTERCONNECT renumberMesh -overwrite
 }
 
 function runCheckMesh()

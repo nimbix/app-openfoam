@@ -149,8 +149,8 @@ echo ----------------------------------------------
 echo "Running decomposePar"
 time decomposePar > $CASE/log.decomposePar
 echo ----------------------------------------------
-time runRenumberMesh $CASE $INTERCONNECT
-echo ----------------------------------------------
+#time runRenumberMesh $CASE $INTERCONNECT # We don't need this....
+#echo ----------------------------------------------
 time runCheckMesh $CASE $INTERCONNECT
 echo ----------------------------------------------
 # time runPotentialFoam $CASE $INTERCONNECT

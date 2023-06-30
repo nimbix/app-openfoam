@@ -105,11 +105,11 @@ touch $CASE/CFD.foam
 [[ "$JOB_NAME" == "local" ]] && echo "127.0.0.1" > hostfile || true
 
 if [[ $BENCHMARK_CASE == 'motorbike' ]]; then
-  exec /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
 elif [[ $BENCHMARK_CASE == 'cavity' ]]; then
-  exec /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
 elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
-  exec /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
 fi
 
 if [[ ${KEEP_RESULTS} == 'false' ]]; then

@@ -45,25 +45,12 @@ set -e
 
 # parse command line
 CASE="/data/openfoam-${OPENFOAM_VERSION}/run"
-MESHTYPE="blockMesh"
-SOLVER="laplacianFoam"
 
 while [[ -n "$1" ]]; do
   case "$1" in
   -case)
     shift
     CASE="$1"
-    ;;
-  -mesh)
-    MESHTYPE="true"
-    ;;
-  -meshtype)
-    shift
-    MESHTYPE="$1"
-    ;;
-  -solver)
-    shift
-    SOLVER="$1"
     ;;
   *)
     echo "Invalid argument: $1" >&2
@@ -81,9 +68,10 @@ export WM_PROJECT_USER_DIR=/data/openfoam-${OPENFOAM_VERSION}
 # mkdir -p /data/openfoam-${OPENFOAM_VERSION}/run
 
 # select Case dir, strip file name off path
+AllRunScript="$CASE"
 CASE=$(dirname "$CASE")
-echo "Using OpenFOAM Case directory: $CASE"
 cd "$CASE"
+echo "Using OpenFOAM Case directory: $PWD"
 
 if [[ -f ${FOAMETC}/bashrc ]]; then
   echo "Sourcing OpenFOAM environment"
@@ -93,17 +81,4 @@ else
   exit 1
 fi
 
-# decompose prepped Mesh option
-
-# run selected mesh and log
-echo "Running selected mesh and logging to $CASE/case.log"
-$MESHTYPE | tee -a "$CASE"/case.log
-
-# set initial fields
-echo "Running setFields and logging to $CASE/case.log"
-setFields | tee -a "$CASE"/case.log
-
-# run solver on mesh with MPI
-$SOLVER | tee -a "$CASE"/case.log
-
-# post-process prep: reconstruct mesh
+exec /usr/bin/env bash ${AllRunScript}

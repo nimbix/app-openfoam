@@ -1,8 +1,9 @@
 {
-  "name": "OpenFOAM&reg; v2210",
+  "name": "OpenFOAM&reg; OPENFOAM_VERSION",
   "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
-  "author": "OpenCFD Ltd",
+  "author": "OPENFOAM_AUTHOR",
   "licensed": true,
+  "appdefversion": 2,
   "classifications": [
     "Simulation/Computational Fluid Dynamics"
   ],
@@ -16,18 +17,33 @@
     "GUI": {
       "path": "/usr/local/scripts/start-openfoam-viz.sh",
       "interactive": true,
+      "desktop": true,
       "name": "OpenFOAM GUI",
-      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI). Case will be run from /data/openfoam10/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI).",
       "machines": [
         "n*"
       ],
       "parameters": {}
     },
+    "AllRun": {
+      "path": "/usr/local/scripts/openfoam-allrun.sh",
+      "interactive": false,
+      "name": "OpenFOAM Allrun",
+      "description": "Run OpenFOAM&reg; for a case via a AllRun script.",
+      "parameters": {
+        "-case": {
+          "required": true,
+          "type": "FILE",
+          "name": "Allrun.sh",
+          "description": "OpenFOAM case: Select the Allrun.sh file in the case directory"
+        }
+      }
+    },
     "Batch": {
       "path": "/usr/local/scripts/openfoam-batch.sh",
-      "interactive": true,
+      "interactive": false,
       "name": "OpenFOAM Batch",
-      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI, Case should be run from /data/openfoam10/run ($FOAM_RUN)",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI.",
       "parameters": {
         "-case": {
           "required": true,
@@ -178,12 +194,19 @@
           "required": true,
           "type": "selection",
           "name": "Benchmark Case"
+        },
+        "-keepResults": {
+          "type": "BOOL",
+          "name": "Keep Simulation Files",
+          "required": false,
+          "value": false,
+          "positional": false
         }
       }
     }
   },
   "image": {
     "type": "image/png",
-    "data": "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"
+    "data": "OPENFOAM_LOGO_GOES_HERE"
   }
 }

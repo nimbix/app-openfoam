@@ -138,10 +138,23 @@ fi
 # Need foamExec for remote (parallel) runs
 if [ "$optParallel" = true ]
 then
+
+    # Use Find to get location
+    # foamExec="$WM_PROJECT_DIR/bin/tools/foamExec"
+    # foamExec=$(find /opt/OpenFOAM/OpenFOAM-10/bin -name foamExec)
+    foamExec=$(find $WM_PROJECT_DIR -name foamExec)
+
     # Use foamExec for dispatching
     [ -x "$foamExec" ] || usage "File not found: $foamExec"
 
     APPLICATION="$foamExec"
+
+
+    # # com placement
+    # foamExec="$WM_PROJECT_DIR/bin/tools/foamExec"
+
+    # # org placement
+    # foamExec="$WM_PROJECT_DIR/bin/foamExec"
 else
     # Drop first argument in favour of fully qualified APPLICATION
     shift
@@ -234,9 +247,10 @@ then
 
         if [ "$JARVICE_MPI_PROVIDER" == "efa" ]; then
             mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
+            # mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
             # mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
-            mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
+            # mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
+            mpiopts="$mpiopts --mca pml cm --mca mtl ofi"
         fi
 
         if [ "$JARVICE_MPI_PROVIDER" = "verbs" ]; then
