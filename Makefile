@@ -1,23 +1,27 @@
-# NIMBIX CONFIDENTIAL
-# -------------------
-#
-# Copyright (c) 2016 Nimbix, Inc.  All Rights Reserved.
-#
-# NOTICE:  All information contained herein is, and remains the property of
-# Nimbix, Inc. and its suppliers, if any.  The intellectual and technical
-# concepts contained herein are proprietary to Nimbix, Inc.  and its suppliers
-# and may be covered by U.S. and Foreign Patents, patents in process, and are
-# protected by trade secret or copyright law.  Dissemination of this
-# information or reproduction of this material is strictly forbidden unless
-# prior written permission is obtained from Nimbix, Inc.
-#
-# Author: Stephen Fox (stephen.fox@nimbix.net)
+SHELL := /bin/bash
 
-image: Dockerfile
-	docker build -t openfoam .
+appdef-com:
+	sed "s,OPENFOAM_VERSION,v2306," NAE/AppDef.json > NAE/AppDef-com.json
+	sed -i "s,OPENFOAM_AUTHOR,OpenCFD Ltd," NAE/AppDef-com.json
+	sed -i "s,OPENFOAM_LOGO_GOES_HERE,$$(cat NAE/openfoam-com.png | base64 -w0)," NAE/AppDef-com.json
 
-tag: image
-	docker tag openfoam jarvice/openfoam:latest && docker tag openfoam jarvice/openfoam:4
+appdef-org:
+	sed "s,OPENFOAM_VERSION,11," NAE/AppDef.json > NAE/AppDef-org.json
+	sed -i "s,OPENFOAM_AUTHOR,OpenFOAM Foundation\, inc," NAE/AppDef-org.json
+	sed -i "s,OPENFOAM_LOGO_GOES_HERE,$$(cat NAE/openfoam-org.png | base64 -w0)," NAE/AppDef-org.json
 
-all : tag
-	docker push jarvice/openfoam:latest && docker push jarvice/openfoam:4
+org: appdef-org
+	DOCKER_BUILDKIT=1 docker build --pull --rm -f "Dockerfile.org" -t us-docker.pkg.dev/jarvice/images/app-openfoam:11 --build-arg OPENFOAM_VERSION=11 "."
+
+com: appdef-com
+	DOCKER_BUILDKIT=1 docker build --pull --rm -f "Dockerfile.com" -t us-docker.pkg.dev/jarvice/images/app-openfoam:2306 --build-arg OPENFOAM_VERSION=v2306 "."
+
+push-com: com
+	docker push us-docker.pkg.dev/jarvice/images/app-openfoam:2306
+
+push-org: org
+	docker push us-docker.pkg.dev/jarvice/images/app-openfoam:11
+
+all: org com
+
+push-all: push-org push-com

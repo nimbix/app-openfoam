@@ -1,0 +1,212 @@
+{
+  "name": "OpenFOAM&reg; OPENFOAM_VERSION",
+  "description": "OpenFOAM has an extensive range of features to solve anything from complex fluid flows involving chemical reactions, turbulence and heat transfer, to acoustics, solid mechanics and electromagnetics",
+  "author": "OPENFOAM_AUTHOR",
+  "licensed": true,
+  "appdefversion": 2,
+  "classifications": [
+    "Simulation/Computational Fluid Dynamics"
+  ],
+  "machines": [
+    "n*"
+  ],
+  "vault-types": [
+    "FILE"
+  ],
+  "commands": {
+    "GUI": {
+      "path": "/usr/local/scripts/start-openfoam-viz.sh",
+      "interactive": true,
+      "desktop": true,
+      "name": "OpenFOAM GUI",
+      "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI).",
+      "machines": [
+        "n*"
+      ],
+      "parameters": {}
+    },
+    "AllRun": {
+      "path": "/usr/local/scripts/openfoam-allrun.sh",
+      "interactive": false,
+      "name": "OpenFOAM Allrun",
+      "description": "Run OpenFOAM&reg; for a case via a AllRun script.",
+      "parameters": {
+        "-case": {
+          "required": true,
+          "type": "FILE",
+          "name": "Allrun.sh",
+          "description": "OpenFOAM case: Select the Allrun.sh file in the case directory"
+        }
+      }
+    },
+    "Batch": {
+      "path": "/usr/local/scripts/openfoam-batch.sh",
+      "interactive": false,
+      "name": "OpenFOAM Batch",
+      "description": "Run OpenFOAM&reg; for a case thru decompose, mesh and solve stages with MPI.",
+      "parameters": {
+        "-case": {
+          "required": true,
+          "type": "FILE",
+          "name": "OpenFOAM case, select any file in the case directory"
+        },
+        "-mesh": {
+          "type": "BOOL",
+          "required": true,
+          "value": true,
+          "name": "Run mesh generation?",
+          "description": "Select here to run the selected mesh generation utility on the Case"
+        },
+        "-meshtype": {
+          "values": [
+            "blockMesh",
+            "extrude2DMesh",
+            "extrudeMesh",
+            "extrudeToRegionMesh",
+            "foamyHexMesh",
+            "foamyQuadMesh",
+            "snappyHexMesh"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "Mesh generator"
+        },
+        "-solver": {
+          "values": [
+            "laplacianFoam",
+            "potentialFoam",
+            "scalarTransportFoam",
+            "adjointShapeOptimizationFoam",
+            "boundaryFoam",
+            "foamyQuadMesh",
+            "icoFoam",
+            "nonNewtonianIcoFoam",
+            "pimpleFoam",
+            "SRFPimpleFoam",
+            "pisoFoam",
+            "simpleFoam",
+            "porousSimpleFoam",
+            "SRFSimpleFoam",
+            "rhoCentralFoam",
+            "rhoPimpleFoam",
+            "rhoPorousSimpleFoam",
+            "cavitatingFoam",
+            "compressibleInterFoam",
+            "compressibleInterFilmFoam",
+            "compressibleMultiphaseInterFoam",
+            "driftFluxFoam",
+            "interFoam",
+            "interMixingFoam",
+            "interPhaseChangeFoam",
+            "multiphaseEulerFoam",
+            "multiphaseInterFoam",
+            "potentialFreeSurfaceFoam",
+            "reactingMultiphaseEulerFoam",
+            "interPhaseChangeFoam",
+            "reactingTwoPhaseEulerFoam",
+            "twoLiquidMixingFoam",
+            "twoPhaseEulerFoam",
+            "dnsFoam",
+            "reactingTwoPhaseEulerFoam",
+            "chemFoam",
+            "reactingTwoPhaseEulerFoam",
+            "coldEngineFoam",
+            "engineFoam",
+            "fireFoam",
+            "PDRFoam",
+            "reactingFoam",
+            "rhoReactingBuoyantFoam",
+            "rhoReactingFoam",
+            "XiengineFoam",
+            "XiFoam",
+            "buoyantPimpleFoam",
+            "buoyantSimpleFoam",
+            "chtMultiRegionFoam",
+            "thermoFoam",
+            "coalChemistryFoam",
+            "DPMFoam",
+            "MPPICFoam",
+            "icoUncoupledKinematicParcelFoam",
+            "reactingParcelFoam",
+            "simpleReactingParcelFoam",
+            "sprayFoam",
+            "uncoupledKinematicParcelFoam",
+            "dsmcFoam",
+            "mdEquilibrationFoam",
+            "mdFoam",
+            "electrostaticFoam",
+            "magneticFoam",
+            "mhdFoam",
+            "solidDisplacementFoam",
+            "solidEquilibriumDisplacementFoam",
+            "financialFoam"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "Solver"
+        }
+      }
+    },
+    "Benchmark": {
+      "path": "/usr/local/scripts/openfoam-benchmark.sh",
+      "interactive": false,
+      "name": "OpenFOAM Benchmark",
+      "description": "Run OpenFOAM&reg; benchmark using an example file",
+      "parameters": {
+        "-num_procs": {
+          "value": 0,
+          "min": 0,
+          "max": 2048,
+          "required": true,
+          "type": "INT",
+          "name": "Number of processes per node to use (0 is all)."
+        },
+        "-num_nodes": {
+          "value": 0,
+          "min": 0,
+          "max": 2048,
+          "type": "INT",
+          "required": true,
+          "name": "Number of nodes to use (0 is all)"
+        },
+        "-numberOfCells": {
+          "value": 8000,
+          "min": 1000,
+          "max": 100000000000000,
+          "type": "INT",
+          "required": true,
+          "name": "Desired number of cells in mesh"
+        },
+        "-interconnect": {
+          "values": [
+            "ib",
+            "ethernet"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "MPI Connector Type"
+        },
+        "-benchmark_case": {
+          "values": [
+            "cavity",
+            "cavity-simple"
+          ],
+          "required": true,
+          "type": "selection",
+          "name": "Benchmark Case"
+        },
+        "-keepResults": {
+          "type": "BOOL",
+          "name": "Keep Simulation Files",
+          "required": false,
+          "value": false,
+          "positional": false
+        }
+      }
+    }
+  },
+  "image": {
+    "type": "image/png",
+    "data": "OPENFOAM_LOGO_GOES_HERE"
+  }
+}
