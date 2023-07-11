@@ -32,7 +32,12 @@
 set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
-cp -r $FOAM_TUTORIALS/incompressible/pisoFoam/RAS/cavityCoupledU/* .
+
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    cp -r $FOAM_TUTORIALS/incompressibleFluid/cavityCoupledU/* .
+else
+    cp -r $FOAM_TUTORIALS/incompressible/pisoFoam/RAS/cavityCoupledU/* .
+fi
 
 function updateDecomposePar()
 {
@@ -41,7 +46,11 @@ function updateDecomposePar()
     numProcs=$2
     numNodes=$3
 
-    cp $FOAM_TUTORIALS/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+        cp $FOAM_TUTORIALS/fluid/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    else
+        cp $FOAM_TUTORIALS/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    fi
 
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")
@@ -105,8 +114,14 @@ function updateFvSolution()
     # Use DILUPBiCGStab instead of smoothSolver
     sed -i "s/        solver          smoothSolver;/        solver          PBiCGStab;\\n        preconditioner  DILU;/" $CASE/system/fvSolution
 
-    # Switch from PISO to SIMPLE
-    sed -i "s/PISO/SIMPLE/" $CASE/system/fvSolution
+    if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+        # Switch from PISO to SIMPLE
+        sed -i "s/PIMPLE/SIMPLE/" $CASE/system/fvSolution
+        sed -i "s/    nCorrectors     2;/    nCorrectors     1;/" $CASE/system/fvSolution
+    else
+        # Switch from PISO to SIMPLE
+        sed -i "s/PISO/SIMPLE/" $CASE/system/fvSolution
+    fi
 
     # Add consistent yes after nNonOrthogonalCorrectors
     sed -i "s/    nNonOrthogonalCorrectors 0;/    nNonOrthogonalCorrectors 0;\n    consistent yes;/" $CASE/system/fvSolution
@@ -122,6 +137,12 @@ function updateFvSolution()
     echo "        epsilon         0.7;" >> $CASE/system/fvSolution
     echo "    }" >> $CASE/system/fvSolution
     echo "}" >> $CASE/system/fvSolution
+
+
+    # Update fvSchemes
+    if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+        sed -i "s/    default         Euler;/    default         steadyState;/" $CASE/system/fvSchemes
+    fi
 }
 
 CASE=$1
@@ -157,7 +178,11 @@ echo ----------------------------------------------
 # echo ----------------------------------------------
 echo "Running simpleFoam"
 stime=$(date '+%s%3N')
-time runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    time runParallelUsingInterface $CASE $INTERCONNECT foamRun
+else
+    time runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
+fi
 etime=$(date '+%s%3N')
 dt_solver=$((etime-stime))
 echo ----------------------------------------------
