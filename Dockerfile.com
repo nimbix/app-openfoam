@@ -30,7 +30,7 @@
 # OpenCFD Ltd -> com
 
 # Openfoam Version
-ARG OPENFOAM_VERSION=v2306
+ARG OPENFOAM_VERSION=v1812
 
 # Serial Number
 ARG SERIAL_NUMBER=20230730.1000
@@ -94,33 +94,21 @@ RUN apt-get update && \
 
 # Add OpenFOAM Repo (not available yet...)
 WORKDIR /opt/OpenFOAM
-# RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/OpenFOAM-${OPENFOAM_VERSION}.tgz | tar xz
-# RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tgz | tar xz
-RUN wget -O - https://develop.openfoam.com/Development/openfoam/-/archive/OpenFOAM-v2306/openfoam-OpenFOAM-v2306.tar.gz | tar xz
-RUN wget -O - https://develop.openfoam.com/Development/ThirdParty-common/-/archive/v2306/ThirdParty-common-v2306.tar.gz | tar xz
-RUN mv openfoam-OpenFOAM-v2306 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
-RUN mv ThirdParty-common-v2306 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
+RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/OpenFOAM-${OPENFOAM_VERSION}.tgz | tar xz
+RUN wget -O - https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tgz | tar xz
 RUN cd /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}; \
-    wget -O - https://gforge.inria.fr/frs/download.php/file/38352/scotch_6.1.0.tar.gz | tar xz; \
-    wget -O - https://github.com/KaHIP/KaHIP/archive/v3.15.tar.gz | tar xz; \
-    mv KaHIP-3.15 kahip-3.15; \
-    wget -O - https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz; \
-    wget -O - https://www.fftw.org/fftw-3.3.10.tar.gz | tar xz; \
-    wget -O - https://github.com/ornladios/ADIOS2/archive/refs/tags/v2.8.3.tar.gz | tar xz; \
-    wget -O - https://github.com/CGAL/cgal/archive/refs/tags/releases/CGAL-4.14.3.tar.gz | tar xz; \
-    wget -O - https://boostorg.jfrog.io/artifactory/main/release/1.74.0/source/boost_1_74_0.tar.gz | tar xz; \
-    mv cgal-releases-CGAL-4.14.3 CGAL-4.14.3;
+    wget -O - https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz;
 
 # Add extra compile options
 #   -flto for link time optimizations
-RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" wmake/.)
+# RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" wmake/.)
 
 SHELL ["/bin/bash", "-c"]
 # Build OpenFOAM with JARVICE MPI
 RUN source /opt/JARVICE/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
-    ./Allwmake -j16 -q
+    ./Allwmake
 
 # Remove .o files and .dep files
 RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/build && \
@@ -158,6 +146,7 @@ COPY --from=buffer --chmod=0777 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} /op
 
 # Replace custom foamJob file with one provided by openfoam
 COPY buildScripts/foamJob.com /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin/foamJob
+COPY buildScripts/foamExec /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin/foamExec
 
 COPY scripts /usr/local/scripts
 

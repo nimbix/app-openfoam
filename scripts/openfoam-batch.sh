@@ -27,13 +27,6 @@
 # those of the authors and should not be interpreted as representing official
 # policies, either expressed or implied, of Nimbix, Inc.
 
-# This JARVICE batch processing script is an example of submitting multiple
-# OpenFOAM processing steps in one multi-node run with MPI.
-#
-#  Here, we make the optional steps to implement the dam break example
-#  https://cfd.direct/openfoam/user-guide/v7-dambreak/#x7-640002.3.12
-#
-
 source /usr/local/scripts/openfoam-mpi-setup.sh
 
 # Source the JARVICE job environment variables
