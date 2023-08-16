@@ -99,9 +99,10 @@ RUN mv ThirdParty-${OPENFOAM_VERSION}-version-${OPENFOAM_VERSION} ThirdParty-${O
 RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" wmake/.)
 RUN cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/ && sed -i 's/\-fPIC\b/-fPIC -flto/g' $(grep -lr -- "-fPIC" etc/.)
 
-# Build OpenFOAM with JARVICE MPI
+# Build OpenFOAM with JARVICE MPI Allow for 64 bit labels
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/JARVICE/jarvice_mpi.sh && \
+    sed -i "s,export WM_LABEL_SIZE=32,export WM_LABEL_SIZE=64," /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
     ./Allwmake -j16 -q
