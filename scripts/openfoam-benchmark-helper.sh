@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2022, Nimbix, Inc.
+# Copyright (c) 2023, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -95,6 +95,14 @@ function runSimpleFoam()
     CASE=$1
     INTERCONNECT=$2
     runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
+}
+
+function runRefineMesh()
+{
+    echo "Running refineMesh"
+    CASE=$1
+    INTERCONNECT=$2
+    runParallelUsingInterface $CASE $INTERCONNECT refineMesh -all -overwrite
 }
 
 # https://nekodaemon.com/2021/02/05/Understanding-MPI-map-by-and-bind-to-option/#Appendix
