@@ -110,6 +110,8 @@ elif [[ $BENCHMARK_CASE == 'cavity' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
 elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+elif [[ $BENCHMARK_CASE == 'cavity-simple-refineMesh' ]]; then
+  /usr/local/scripts/openfoam-benchmark-cavity-simple-refineMesh.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
 fi
 
 if [[ ${KEEP_RESULTS} == 'false' ]]; then

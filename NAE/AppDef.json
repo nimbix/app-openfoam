@@ -189,7 +189,8 @@
         "-benchmark_case": {
           "values": [
             "cavity",
-            "cavity-simple"
+            "cavity-simple",
+            "cavity-simple-refineMesh"
           ],
           "required": true,
           "type": "selection",
