@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2022, Nimbix, Inc.
+# Copyright (c) 2024, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -56,10 +56,42 @@ if [ "$JARVICE_MPI_CMA" != "true" ]; then
   export OMPI_MCA_btl_vader_single_copy_mechanism=none
 fi
 
-if [[ -n $EFA_ACTIVE ]]; then
-  echo "INFO: using EFA for OpenMPI"
-  export FI_EFA_FORK_SAFE=1
-  export MPIRUN='/opt/JARVICE/openmpi/bin/mpirun'
+# Get MPI
+# This can be at two different places until ucx is adopted into init
+
+# First, check if JARVICE has been updated with the ucx changes
+if [[ -f /opt/JARVICE/bin/ucx_info ]]; then
+  echo "INFO: Found OpenMPI at /opt/JARVICE"
+  JARVICE_FOLDER=/opt/JARVICE; \
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+  export MPI_HAS_UCX=true
+
+# Now check if ucx is in JARVICE_UCX
+elif [[ -f /opt/JARVICE_UCX/bin/ucx_info ]]; then
+  echo "INFO: Found OpenMPI at /opt/JARVICE_UCX"
+  JARVICE_FOLDER=/opt/JARVICE_UCX; \
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+  export MPI_HAS_UCX=true
+
+# If ucx is not available, use non-ucx JARVICE
+elif [[ -f /opt/JARVICE/bin/fi_info ]]; then
+  echo "WARNING: Did not find UCX build, using /opt/JARVICE"
+  JARVICE_FOLDER=/opt/JARVICE; \
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+
 else
+  echo "WARNING: Did not find OpenMPI build, defaulting to system, this may not work..."
   export MPIRUN='mpirun'
 fi
