@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2023, Nimbix, Inc.
+# Copyright (c) 2024, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -116,6 +116,6 @@ function runParallelUsingInterface()
     shift
     NUM_PROCS=$(getNumberOfProcessors)
 
-    foamJob -p -w -m $MPIRUN $APP "$@"
+    foamJob -p -w $APP "$@"
     cp log $CASE/log.$APP
 }

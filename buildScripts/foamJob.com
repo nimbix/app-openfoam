@@ -8,6 +8,7 @@
 #------------------------------------------------------------------------------
 #     Copyright (C) 2011-2015 OpenFOAM Foundation
 #     Copyright (C) 2019-2022 OpenCFD Ltd.
+#     Copyright (C) 2023-2024 Nimbix, Inc.
 #------------------------------------------------------------------------------
 # License
 #     This file is part of OpenFOAM, distributed under GPL-3.0-or-later.
@@ -140,21 +141,13 @@ if [ "$optParallel" = true ]
 then
 
     # Use Find to get location
-    # foamExec="$WM_PROJECT_DIR/bin/tools/foamExec"
-    # foamExec=$(find /opt/OpenFOAM/OpenFOAM-10/bin -name foamExec)
     foamExec=$(find $WM_PROJECT_DIR -name foamExec)
 
     # Use foamExec for dispatching
-    [ -x "$foamExec" ] || usage "File not found: $foamExec"
+    [ -x "$foamExec" ] || usage "ERROR: foamExec file not found: $foamExec"
 
     APPLICATION="$foamExec"
 
-
-    # # com placement
-    # foamExec="$WM_PROJECT_DIR/bin/tools/foamExec"
-
-    # # org placement
-    # foamExec="$WM_PROJECT_DIR/bin/foamExec"
 else
     # Drop first argument in favour of fully qualified APPLICATION
     shift
@@ -203,7 +196,9 @@ then
     #
     # Find mpirun
     #
-    if [ "$mpiRunCmd" = "not set" ]; then
+    if [ -n "$MPI_RUN" ]; then
+        mpirun="$MPI_RUN"
+    elif [ "$mpiRunCmd" = "not set" ]; then
         mpirun=$(command -v mpirun) || usage "'mpirun' not found"
     else
         mpirun=$(command -v $mpiRunCmd) || usage "${mpiRunCmd} not found"
@@ -236,6 +231,12 @@ then
             mpiopts="$mpiopts -x FOAM_SETTINGS"
         fi
 
+        # Send LD_LIBRARY_PATH to parallel processes
+        if [ -n "$LD_LIBRARY_PATH" ]
+        then
+            mpiopts="$mpiopts -x LD_LIBRARY_PATH"
+        fi
+
         #
         # Add map-by node to options for load balancing
         #
@@ -244,18 +245,18 @@ then
         #
         # Add EFA specific settings here
         #
-
         if [ "$JARVICE_MPI_PROVIDER" == "efa" ]; then
-            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            # mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
-            # mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
-            # mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
-            mpiopts="$mpiopts --mca pml cm --mca mtl ofi"
+            # mpiopts="$mpiopts --mca pml cm --mca mtl ofi"
+            # mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi"
+            mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi --mca btl self,vader,tcp --mca btl_sm_use_knem 0"
         fi
 
         if [ "$JARVICE_MPI_PROVIDER" = "verbs" ]; then
-            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
+            if [ -z $MPI_HAS_UCX ]; then
+                mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
+            else
+                mpiopts="$mpiopts --mca --mca pml ucx --mca btl ^openib"
+            fi
         fi
         ;;
     esac
