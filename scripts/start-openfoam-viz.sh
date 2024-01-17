@@ -42,5 +42,9 @@ cp /usr/local/scripts/paraFoam.desktop $HOME/Desktop/paraFoam.desktop
 
 # Set in openfoam-mpi-setup.sh
 # echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
+
+if [[ -z $PS1 ]]; then
+  echo export "PS1=\"[\u@\h:\w]\\$ \"" >> $HOME/.bashrc
+fi
 echo "alias paraFoam='paraFoam -builtin'" >> $HOME/.bashrc
 exec xfce4-terminal -T OpenFOAM --working-directory=/data/openfoam-${OPENFOAM_VERSION}/run

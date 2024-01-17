@@ -36,15 +36,6 @@
 
 TOOLSDIR="/usr/local/JARVICE/tools/bin"
 
-# OpenFOAM config dir
-export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
-# Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
-for i in $(cat /etc/JARVICE/nodes); do
-  ssh $i echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
-done
-
-# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
-
 # Detect AWS and its EFA provider for the OFI fabric
 [[ $JARVICE_MPI_PROVIDER == efa ]] && export EFA_ACTIVE=1
 
@@ -94,4 +85,21 @@ elif [[ -f /opt/JARVICE/bin/fi_info ]]; then
 else
   echo "WARNING: Did not find OpenMPI build, defaulting to system, this may not work..."
   export MPIRUN='mpirun'
+  NO_ACC_MPI_FOUND="true"
 fi
+
+# OpenFOAM config dir
+export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
+# Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
+for i in $(cat /etc/JARVICE/nodes); do
+  if [[ -z $NO_ACC_MPI_FOUND ]]; then
+    ssh $i echo "export PATH=$PATH" >> $HOME/.bashrc
+    ssh $i echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $HOME/.bashrc
+    ssh $i echo "export CPATH=$CPATH" >> $HOME/.bashrc
+    ssh $i echo "export MPI_HOME=$MPI_HOME" >> $HOME/.bashrc
+    ssh $i echo "export MPI_RUN=$MPI_RUN" >> $HOME/.bashrc
+  fi
+  ssh $i echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
+done
+
+# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
