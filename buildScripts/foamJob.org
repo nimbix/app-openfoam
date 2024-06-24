@@ -89,7 +89,6 @@ findExec() {
 # Main script
 #~~~~~~~~~~~~
 unset parallelOpt screenOpt waitOpt mpiRunCmd
-# . /usr/local/scripts/openfoam-mpi-setup.sh
 mpiRunCmd="not set"
 # Parse options
 while [ "$#" -gt 0 ]
@@ -171,7 +170,7 @@ else
     shift
 fi
 
-
+ERR=0
 if [ "$parallelOpt" = true ]
 then
     # parallel
@@ -200,7 +199,9 @@ then
     #
     # Find mpirun
     #
-    if [ "$mpiRunCmd" = "not set" ]; then
+    if [ -n "$MPI_RUN" ]; then
+        mpirun=$MPI_RUN"
+    elif [ "$mpiRunCmd" = "not set" ]; then
         mpirun=$(findExec mpirun) || error "'mpirun' not found"
     else
         mpirun=$(findExec $mpiRunCmd) || error "${mpiRunCmd} not found"
@@ -233,34 +234,41 @@ then
         # Send FOAM_SETTINGS to parallel processes, so that the proper
         # definitions are sent as well.
         #
-        mpiopts="$mpiopts -x FOAM_SETTINGS"
+        if [ -n "$FOAM_SETTINGS" ]
+        then
+            mpiopts="$mpiopts -x FOAM_SETTINGS"
+        fi
+
+        # Send LD_LIBRARY_PATH to parallel processes
+        if [ -n "$LD_LIBRARY_PATH" ]
+        then
+            mpiopts="$mpiopts -x LD_LIBRARY_PATH"
+        fi
 
         #
         # Add map-by node to options for load balancing
         #
         mpiopts="$mpiopts --map-by node"
 
+        # #
+        # # Add io mpi option and let it decide the filesystem
+        # #
+        # mpiopts="$mpiopts --mca io iompi"
+
         #
         # Add EFA specific settings here
         #
-
         if [ "$JARVICE_MPI_PROVIDER" == "efa" ]; then
-            # mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            # mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
-            # # mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
-            # mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
-            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            # mpiopts="$mpiopts -x FI_EFA_FORK_SAFE=1"
-            # mpiopts="$mpiopts -x FI_PROVIDER=\"efa\"" # --mca btl tcp,self" # --bind-to none"
-            # mpiopts="$mpiopts --mca btl tcp,vader,self --bind-to none --mca btl_tcp_if_exclude lo,docker0"
-            mpiopts="$mpiopts --mca pml cm --mca mtl ofi"
+            mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi --mca btl self,vader,tcp --mca btl_sm_use_knem 0"
         fi
 
         if [ "$JARVICE_MPI_PROVIDER" = "verbs" ]; then
-            mpirun="/opt/JARVICE/openmpi/bin/mpirun"
-            mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
+            if [ -z $MPI_HAS_UCX ]; then
+                mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
+            else
+                mpiopts="$mpiopts --mca pml ucx --mca btl ^vader,tcp,openib,uct"
+            fi
         fi
-
         ;;
     esac
 
@@ -286,6 +294,7 @@ then
         if [ "$waitOpt" = true ]
         then
             wait $pid
+            ERR=$?
         fi
     fi
 
@@ -313,9 +322,11 @@ else
         if [ "$waitOpt" = true ]
         then
             wait $pid
+            ERR=$?
         fi
     fi
 fi
 
+exit $ERR
 
 #------------------------------------------------------------------------------

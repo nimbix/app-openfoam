@@ -167,7 +167,10 @@ echoArgs()
     echo "$stringifiedArgs"
 }
 
+# Sleep for a moment to make sure files are updated
+sleep 1
 
+ERR=0
 if [ "$optParallel" = true ]
 then
     #
@@ -181,6 +184,8 @@ then
     }
 
     nProcs="$(foamDictionary -entry numberOfSubdomains -value $dict 2>/dev/null)"
+    nNodes=$(cat /etc/JARVICE/nodes | wc -l)
+    nProcsPerNode=$((nProcs/nNodes))
 
     # Check if case is decomposed
     if [ "$optCheck" = true ]
@@ -203,7 +208,7 @@ then
     else
         mpirun=$(command -v $mpiRunCmd) || usage "${mpiRunCmd} not found"
     fi
-    mpiopts="-n $nProcs"
+    mpiopts="-np $nProcs -npernode $nProcsPerNode"
 
     # Check if the machine ready to run parallel
     case "$WM_MPLIB" in
@@ -237,10 +242,12 @@ then
             mpiopts="$mpiopts -x LD_LIBRARY_PATH"
         fi
 
+        # fileHandler???
+
         #
-        # Add map-by node to options for load balancing
+        # Add io mpi option and let it decide the filesystem
         #
-        mpiopts="$mpiopts --map-by node"
+        mpiopts="$mpiopts --mca io iompi"
 
         #
         # Add EFA specific settings here
@@ -255,7 +262,7 @@ then
             if [ -z $MPI_HAS_UCX ]; then
                 mpiopts="$mpiopts --mca btl openib,vader,self --mca btl_openib_allow_ib true"
             else
-                mpiopts="$mpiopts --mca --mca pml ucx --mca btl ^openib"
+                mpiopts="$mpiopts --mca pml ucx --mca btl ^vader,tcp,openib,uct"
             fi
         fi
         ;;
@@ -301,7 +308,8 @@ then
         then
             echo "Waiting for process $pid to finish"
             wait "$pid"
-            echo "Process $pid finished"
+            ERR=$?
+            echo "Process $pid finished ($ERR)"
         else
             echo "Process id  : $pid"
         fi
@@ -334,6 +342,7 @@ else
         pid=$!
         echo "Process id  : $pid"
         wait "$pid"
+        ERR=$?
     else
         case "$logMode" in
         none)
@@ -352,12 +361,14 @@ else
         then
             echo "Waiting for process $pid to finish"
             wait "$pid"
-            echo "Process $pid finished"
+            ERR=$?
+            echo "Process $pid finished ($ERR)"
         else
             echo "Process id  : $pid"
         fi
     fi
 fi
 
+exit $ERR
 
 #------------------------------------------------------------------------------

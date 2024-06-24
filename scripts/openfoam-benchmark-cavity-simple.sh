@@ -156,23 +156,31 @@ SCALING=$(echo "e((1/3)*l(${NUMBER_OF_CELLS}))/20" | bc -l)
 
 echo ----------------------------------------------
 time updateDecomposePar $CASE $NUM_PROCS $NUM_NODES
+sleep 1
 echo ----------------------------------------------
 time updateBlockMesh $CASE $SCALING
+sleep 1
 echo ----------------------------------------------
 time updateBoundaryConditions $CASE
+sleep 1
 echo ----------------------------------------------
 time updateControlDict $CASE $SCALING
+sleep 1
 echo ----------------------------------------------
 time updateFvSolution $CASE
+sleep 1
 echo ----------------------------------------------
 time runBlockMesh $CASE
+sleep 1
 echo ----------------------------------------------
 echo "Running decomposePar"
 time decomposePar > $CASE/log.decomposePar
+sleep 1
 echo ----------------------------------------------
 #time runRenumberMesh $CASE $INTERCONNECT # We don't need this....
 #echo ----------------------------------------------
 time runCheckMesh $CASE $INTERCONNECT
+sleep 1
 echo ----------------------------------------------
 # time runPotentialFoam $CASE $INTERCONNECT
 # echo ----------------------------------------------

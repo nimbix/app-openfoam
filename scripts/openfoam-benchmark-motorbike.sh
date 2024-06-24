@@ -79,27 +79,37 @@ SCALING=$4
 INTERCONNECT=$5
 echo ----------------------------------------------
 time updateDecomposePar $CASE $NUM_PROCS $NUM_NODES
+sleep 1
 echo ----------------------------------------------
 time updateBlockMesh $CASE $SCALING
+sleep 1
 echo ----------------------------------------------
 time updateSnappyHexMeshDict $CASE
+sleep 1
 echo ----------------------------------------------
 cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz $CASE/constant/geometry/
 surfaceFeatures > log.surfaceFeatures 2>&1
+sleep 1
 time runBlockMesh $CASE
+sleep 1
 echo ----------------------------------------------
 time runDecomposePar $CASE
+sleep 1
 echo ----------------------------------------------
 stime=$(date '+%s%3N')
 time runSnappyHexMesh $CASE $INTERCONNECT
 etime=$(date '+%s%3N')
+sleep 1
 dt_build=$((etime-stime))
 echo ----------------------------------------------
 time runRenumberMesh $CASE $INTERCONNECT
+sleep 1
 echo ----------------------------------------------
 time runCheckMesh $CASE $INTERCONNECT
+sleep 1
 echo ----------------------------------------------
 time runPotentialFoam $CASE $INTERCONNECT
+sleep 1
 echo ----------------------------------------------
 stime=$(date '+%s%3N')
 time runSimpleFoam $CASE $INTERCONNECT
