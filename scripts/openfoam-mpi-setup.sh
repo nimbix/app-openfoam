@@ -53,34 +53,34 @@ fi
 # First, check if JARVICE has been updated with the ucx changes
 if [[ -f /opt/JARVICE/bin/ucx_info ]]; then
   echo "INFO: Found OpenMPI at /opt/JARVICE"
-  JARVICE_FOLDER=/opt/JARVICE; \
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+  JARVICE_FOLDER=/opt/JARVICE
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
   export MPI_HAS_UCX=true
 
 # Now check if ucx is in JARVICE_UCX
 elif [[ -f /opt/JARVICE_UCX/bin/ucx_info ]]; then
   echo "INFO: Found OpenMPI at /opt/JARVICE_UCX"
-  JARVICE_FOLDER=/opt/JARVICE_UCX; \
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+  JARVICE_FOLDER=/opt/JARVICE_UCX
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
   export MPI_HAS_UCX=true
 
 # If ucx is not available, use non-ucx JARVICE
 elif [[ -f /opt/JARVICE/bin/fi_info ]]; then
   echo "WARNING: Did not find UCX build, using /opt/JARVICE"
-  JARVICE_FOLDER=/opt/JARVICE; \
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun;
+  JARVICE_FOLDER=/opt/JARVICE
+  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+  export MPI_HOME=$JARVICE_FOLDER/openmpi/
+  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
 
 else
   echo "WARNING: Did not find OpenMPI build, defaulting to system, this may not work..."
@@ -93,13 +93,11 @@ export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
   if [[ -z $NO_ACC_MPI_FOUND ]]; then
-    ssh $i echo "export PATH=$PATH" >> $HOME/.bashrc
-    ssh $i echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $HOME/.bashrc
-    ssh $i echo "export CPATH=$CPATH" >> $HOME/.bashrc
-    ssh $i echo "export MPI_HOME=$MPI_HOME" >> $HOME/.bashrc
-    ssh $i echo "export MPI_RUN=$MPI_RUN" >> $HOME/.bashrc
+    ssh $i "echo \"export PATH=$PATH\" >> $HOME/.bashrc"
+    ssh $i "echo \"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH\" >> $HOME/.bashrc"
+    ssh $i "echo \"export CPATH=$CPATH\" >> $HOME/.bashrc"
+    ssh $i "echo \"export MPI_HOME=$MPI_HOME\" >> $HOME/.bashrc"
+    ssh $i "echo \"export MPI_RUN=$MPI_RUN\" >> $HOME/.bashrc"
   fi
-  ssh $i echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
+  ssh $i "echo \"source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc\" >> $HOME/.bashrc"
 done
-
-# echo "source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc" >> $HOME/.bashrc
