@@ -33,10 +33,10 @@
 ARG OPENFOAM_VERSION=v2312
 
 # Serial Number
-ARG SERIAL_NUMBER=20240624.1000
+ARG SERIAL_NUMBER=20240703.1000
 
 # Load updated JARVICE MPI with UCX
-FROM us-docker.pkg.dev/jarvice/images/mpi-test:custom-mpi-ucx-pci as JARVICE_MPI
+FROM us-docker.pkg.dev/jarvice/images/mpi-builder:4.1.6 as JARVICE_MPI
 FROM rockylinux:9 as buffer
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
@@ -47,7 +47,7 @@ ARG OPENFOAM_VERSION
 ENV OPENFOAM_VERSION=${OPENFOAM_VERSION}
 
 # Grab jarvice_mpi from JARVICE_UCX_MPI
-COPY --from=JARVICE_MPI /opt/JARVICE_UCX /opt/JARVICE_UCX
+COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
 
 # Enable fast mirrors
 RUN echo "max_parallel_downloads=20" >> /etc/dnf/dnf.conf && \
@@ -86,28 +86,20 @@ RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPEN
 WORKDIR /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
 RUN curl -L https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz
 
-# Build OpenFOAM with JARVICE_UCX MPI
+# RUN cd /opt/OpenFOAM/ && sed -i 's/\-O3\b/-O3 -flto -mtune=generic -march=x86-64-v3/g' $(grep -lr -- "-O3" .)
+
+# Build OpenFOAM with JARVICE MPI
 SHELL ["/bin/bash", "-c"]
-RUN JARVICE_FOLDER=/opt/JARVICE_UCX; \
-    export PATH=$JARVICE_FOLDER/openmpi/bin:$JARVICE_FOLDER/bin:$PATH; \
-    export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib:$JARVICE_FOLDER/lib:$LD_LIBRARY_PATH; \
-    export CPATH=$JARVICE_FOLDER/openmpi/include:$JARVICE_FOLDER/include:$CPATH; \
-    export MPI_HOME=$JARVICE_FOLDER/openmpi; \
-    export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun; \
+RUN source /opt/JARVICE/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} && \
-    ./Allwmake -j16 -q
+    ./Allwmake -j$(nproc) -q
 
-RUN JARVICE_FOLDER=/opt/JARVICE_UCX; \
-    export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH; \
-    export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH; \
-    export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH; \
-    export MPI_HOME=$JARVICE_FOLDER/openmpi/; \
-    export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun; \
+RUN source /opt/JARVICE/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
-    ./Allwmake -j16 -q && \
-    ./Allwmake -j16 -q && rm -rf build && rm -rf sources
+    ./Allwmake -j$(nproc) -q && \
+    ./Allwmake -j$(nproc) -q && rm -rf build && rm -rf sources
 
 # Main Program
 # FROM us-docker.pkg.dev/jarvice/images/mpi-test:custom-mpi-ucx-pci as JARVICE_MPI

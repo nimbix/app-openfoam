@@ -92,6 +92,9 @@ fi
 export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
+  if [[ $i = "127.0.0.1" ]]; then
+    continue
+  fi
   if [[ -z $NO_ACC_MPI_FOUND ]]; then
     ssh $i "echo \"export PATH=$PATH\" >> $HOME/.bashrc"
     ssh $i "echo \"export LD_LIBRARY_PATH=$LD_LIBRARY_PATH\" >> $HOME/.bashrc"

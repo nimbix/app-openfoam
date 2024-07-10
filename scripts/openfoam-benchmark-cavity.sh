@@ -32,7 +32,12 @@
 set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
-cp -r $FOAM_TUTORIALS/incompressible/pisoFoam/RAS/cavityCoupledU/* .
+
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    cp -r $FOAM_TUTORIALS/incompressibleFluid/cavityCoupledU/* .
+else
+    cp -r $FOAM_TUTORIALS/incompressible/pisoFoam/RAS/cavityCoupledU/* .
+fi
 
 function updateDecomposePar()
 {
@@ -41,7 +46,11 @@ function updateDecomposePar()
     numProcs=$2
     numNodes=$3
 
-    cp $FOAM_TUTORIALS/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+        cp $FOAM_TUTORIALS/fluid/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    else
+        cp $FOAM_TUTORIALS/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    fi
 
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")
@@ -168,7 +177,11 @@ echo ----------------------------------------------
 # echo ----------------------------------------------
 echo "Running pisoFoam"
 stime=$(date '+%s%3N')
-time runParallelUsingInterface $CASE $INTERCONNECT pisoFoam
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    time runParallelUsingInterface $CASE $INTERCONNECT foamRun
+else
+    time runParallelUsingInterface $CASE $INTERCONNECT pisoFoam
+fi
 etime=$(date '+%s%3N')
 dt_solver=$((etime-stime))
 echo ----------------------------------------------
