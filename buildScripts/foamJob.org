@@ -182,6 +182,8 @@ then
     if [ -r "processor0" -o -r "processors" -o "$(echo processors[1-9]*)" != "processors[1-9]*" ]
     then
         NPROCS="$(foamDictionary -expand -entry numberOfSubdomains -value system/decomposeParDict)"
+        NNODES=$(cat /etc/JARVICE/nodes | wc -l)
+        NPROCSPERNODE=$((NPROCS/NNODES))
     else
         echo "Case is not currently decomposed"
         if [ -r system/decomposeParDict ]
@@ -206,7 +208,7 @@ then
     else
         mpirun=$(findExec $mpiRunCmd) || error "${mpiRunCmd} not found"
     fi
-    mpiopts="-np $NPROCS"
+    mpiopts="-np $NPROCS -npernode $NPROCSPERNODE"
 
     #
     # Check if the machine ready to run parallel
@@ -245,15 +247,10 @@ then
             mpiopts="$mpiopts -x LD_LIBRARY_PATH"
         fi
 
-        #
-        # Add map-by node to options for load balancing
-        #
-        mpiopts="$mpiopts --map-by node"
-
         # #
         # # Add io mpi option and let it decide the filesystem
         # #
-        # mpiopts="$mpiopts --mca io iompi"
+        mpiopts="$mpiopts --mca io iompi"
 
         #
         # Add EFA specific settings here
@@ -293,8 +290,12 @@ then
         pid=$!
         if [ "$waitOpt" = true ]
         then
-            wait $pid
+            echo "Waiting for process $pid to finish"
+            wait "$pid"
             ERR=$?
+            echo "Process $pid finished ($ERR)"
+        else
+            echo "Process id  : $pid"
         fi
     fi
 
