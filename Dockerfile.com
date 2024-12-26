@@ -37,7 +37,7 @@ ARG SERIAL_NUMBER=20240703.1000
 
 # Load updated JARVICE MPI with UCX
 FROM us-docker.pkg.dev/jarvice/images/mpi-builder:4.1.6 as JARVICE_MPI
-FROM rockylinux:9 as buffer
+FROM rockylinux/rockylinux:9 as buffer
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
@@ -86,8 +86,6 @@ RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPEN
 WORKDIR /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
 RUN curl -L https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz
 
-# RUN cd /opt/OpenFOAM/ && sed -i 's/\-O3\b/-O3 -flto -mtune=generic -march=x86-64-v3/g' $(grep -lr -- "-O3" .)
-
 # Build OpenFOAM with JARVICE MPI
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/JARVICE/jarvice_mpi.sh && \
@@ -103,7 +101,7 @@ RUN source /opt/JARVICE/jarvice_mpi.sh && \
 
 # Main Program
 # FROM us-docker.pkg.dev/jarvice/images/mpi-test:custom-mpi-ucx-pci as JARVICE_MPI
-FROM rockylinux:9
+FROM rockylinux/rockylinux:9
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
@@ -127,7 +125,7 @@ RUN dnf install -y epel-release &&\
     dnf install -y ca-certificates && \
     curl -H 'Cache-Control: no-cache' \
         https://raw.githubusercontent.com/nimbix/jarvice-desktop/master/install-nimbix.sh \
-        | bash -s -- --jarvice-desktop-branch bug-imagemagick-rhel9
+        | bash
 
 RUN dnf install -y\
         bc\
@@ -153,7 +151,6 @@ RUN dnf install -y\
 # Copy over files
 COPY --from=buffer --chmod=0777 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
 COPY --from=buffer --chmod=0777 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}/platforms /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}/platforms
-# COPY --from=JARVICE_MPI /opt/JARVICE_UCX /opt/JARVICE_UCX
 
 # Replace custom foamJob file with one provided by openfoam
 COPY buildScripts/foamJob.com /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin/foamJob
@@ -169,40 +166,3 @@ COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 # Copy over the app image and the AppDef
 COPY NAE/AppDef-com.json /etc/NAE/AppDef.json
 RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
-
-
-# ################# Add user nimbix for local testing ###########################
-
-# # Add nimbix user
-# RUN useradd --shell /bin/bash nimbix
-# RUN mkdir -p /home/nimbix/
-# RUN mkdir -p /data
-
-# # Have all files be owned by nimbix user
-# RUN chown -R nimbix:nimbix /home/nimbix
-# RUN chown -R nimbix:nimbix /data
-
-# RUN mkdir -p /etc/JARVICE; \
-#     echo "127.0.0.1" > /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores; \
-#     echo "127.0.0.1" >> /etc/JARVICE/cores
-
-# RUN echo "127.0.0.1" > /etc/JARVICE/nodes
-
-# # Grab jarvice_mpi from JARVICE_MPI
-# COPY --from=JARVICE_MPI /opt/JARVICE_UCX /opt/JARVICE
-
-# # /usr/local/scripts/openfoam-benchmark.sh -num_procs 8 -num_nodes 1 -numberOfCells 1000000 -benchmark_case cavity-simple

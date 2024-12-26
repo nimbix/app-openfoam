@@ -8,7 +8,8 @@
     "Simulation/Computational Fluid Dynamics"
   ],
   "machines": [
-    "n*"
+    "n[1-9]-*",
+    "n[1-9][0-9]-*"
   ],
   "vault-types": [
     "FILE"
@@ -21,7 +22,10 @@
       "name": "OpenFOAM GUI",
       "description": "Run OpenFOAM&reg; with the ParaView/paraFoam graphical user interface (GUI).",
       "machines": [
-        "n*"
+        "nc[1-9]-*",
+        "nc[1-9][0-9]-*",
+        "n[1-9]-*",
+        "n[1-9][0-9]-*"
       ],
       "parameters": {}
     },
