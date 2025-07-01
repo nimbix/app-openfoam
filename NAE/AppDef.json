@@ -5,7 +5,8 @@
   "licensed": true,
   "appdefversion": 2,
   "classifications": [
-    "Simulation/Computational Fluid Dynamics"
+    "HPC/Computational Fluid Dynamics (CFD)",
+    "HPC/Benchmark"
   ],
   "machines": [
     "n[1-9]-*",
