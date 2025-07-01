@@ -3,31 +3,25 @@
 set -e
 
 # Get latest openfoam for testing
-CURRENT_OPENFOAM_IMAGE=$(podman images | grep openfoam | head -n1 | awk '{print $1 ":" $2}')
+IMAGE=$(docker images | grep openfoam | head -n1 | awk '{print $1 ":" $2}')
 
-# Make a copy of the verify docker image and add the needed image
-cp Dockerfile.verify Dockerfile.verify.tmp
-sed -i s",CURRENT_OPENFOAM_IMAGE,$CURRENT_OPENFOAM_IMAGE," Dockerfile.verify.tmp
-
-# Build the testing image
-IMAGE="openfoam-verify:latest"
-podman build --rm -f "Dockerfile.verify.tmp" -t ${IMAGE} "."
+echo "INFO: Found $IMAGE"
 
 # Select model to test with
 # BENCH_MARK="cavity"
-BENCH_MARK="cavity-simple"
-# BENCH_MARK="cavity-simple-refineMesh"
-NUM_CORES=16
-NUM_CELLS=900000
+# BENCH_MARK="cavity-simple"
+BENCH_MARK="cavity-simple-refineMesh"
+NUM_CORES=$(lscpu | grep "Core(s) per socket:" | awk '{print $NF}')
+NUM_CELLS=1000000
 
 # BENCH_MARK="motorbike" # BETA TEST IMAGE! MAY NOT WORK!
 
-podman run \
+docker run \
     -it \
     --rm \
     --shm-size=16g \
-    ${IMAGE} /bin/bash -ec "
-    useradd --shell /bin/bash nimbix
+    ${IMAGE} /usr/bin/bash -ec "
+    useradd --shell /usr/bin/bash nimbix
     mkdir -p /home/nimbix/
     mkdir -p /data
     chown -R nimbix:nimbix /home/nimbix
@@ -45,9 +39,7 @@ podman run \
             -num_procs $NUM_CORES -num_nodes 0 \
             -numberOfCells $NUM_CELLS \
             -interconnect ib \
-            -benchmark_case $BENCH_MARK
+            -benchmark_case $BENCH_MARK \
+            -writeInterval 5
     '
 "
-
-rm Dockerfile.verify.tmp
-podman rmi --force localhost/openfoam-verify:latest

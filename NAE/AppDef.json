@@ -206,6 +206,13 @@
           "required": false,
           "value": false,
           "positional": false
+        },
+        "-writeInterval": {
+          "type": "STR",
+          "name": "Write Interval",
+          "required": false,
+          "value": "",
+          "positional": false
         }
       }
     }

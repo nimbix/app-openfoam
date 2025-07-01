@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024, Nimbix, Inc.
+# Copyright (c) 2025, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,12 @@
 set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
-cp -r ${FOAM_TUTORIALS}/incompressible/simpleFoam/motorBike/* .
+
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    cp -r ${FOAM_TUTORIALS}/incompressibleFluid/motorBikeSteady/* .
+else
+    cp -r ${FOAM_TUTORIALS}/incompressible/simpleFoam/motorBike/* .
+fi
 
 function updateDecomposePar()
 {
@@ -41,11 +46,15 @@ function updateDecomposePar()
     numProcs=$2
     numNodes=$3
 
+    if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+        cp $FOAM_TUTORIALS/fluid/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    else
+        cp $FOAM_TUTORIALS/compressible/rhoPimpleFoam/laminar/helmholtzResonance/system/decomposeParDict $CASE/system/. # Just a scotch
+    fi
+
     # Update the number of subdoamains and update the method used
     totalSubdomains=$(perl -e "print $numProcs*$numNodes")
-    sed -i "s/numberOfSubdomains  6;/numberOfSubdomains  $totalSubdomains;/" $CASE/system/decomposeParDict
-    sed -i "s/decomposer      hierarchical;/method          scotch;/" $CASE/system/decomposeParDict
-    sed -i "s/distributor     ptscotch;//" $CASE/system/decomposeParDict
+    sed -i "s/numberOfSubdomains  4;/numberOfSubdomains  $totalSubdomains;/" $CASE/system/decomposeParDict
 }
 
 function updateBlockMesh()
@@ -75,8 +84,10 @@ function updateSnappyHexMeshDict()
 CASE=$1
 NUM_PROCS=$2
 NUM_NODES=$3
-SCALING=$4
+NUMBEROFCELLS=$4
 INTERCONNECT=$5
+
+SCALING=$(perl -e "print $NUMBEROFCELLS/354538")
 echo ----------------------------------------------
 time updateDecomposePar $CASE $NUM_PROCS $NUM_NODES
 sleep 1
@@ -112,7 +123,11 @@ time runPotentialFoam $CASE $INTERCONNECT
 sleep 1
 echo ----------------------------------------------
 stime=$(date '+%s%3N')
-time runSimpleFoam $CASE $INTERCONNECT
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    time runParallelUsingInterface $CASE $INTERCONNECT foamRun
+else
+    time runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
+fi
 etime=$(date '+%s%3N')
 dt_solver=$((etime-stime))
 echo ----------------------------------------------

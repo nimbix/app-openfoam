@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024, Nimbix, Inc.
+# Copyright (c) 2025, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,46 +50,60 @@ fi
 # Get MPI
 # This can be at two different places until ucx is adopted into init
 
-# First, check if JARVICE has been updated with the ucx changes
-if [[ -f /opt/JARVICE/bin/ucx_info ]]; then
-  echo "INFO: Found OpenMPI at /opt/JARVICE"
-  JARVICE_FOLDER=/opt/JARVICE
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
-  export MPI_HAS_UCX=true
+# # First, check if JARVICE-MPI was used instead of the default MPI builder
+# if [[ -f /opt/JARVICE-MPI/bin/ucx_info ]]; then
+#   echo "INFO: Found OpenMPI at /opt/JARVICE-MPI"
+#   JARVICE_FOLDER=/opt/JARVICE-MPI
+#   export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+#   export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+#   export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+#   export MPI_HOME=$JARVICE_FOLDER/openmpi/
+#   export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
+#   export MPI_HAS_UCX=true
 
-# Now check if ucx is in JARVICE_UCX
-elif [[ -f /opt/JARVICE_UCX/bin/ucx_info ]]; then
-  echo "INFO: Found OpenMPI at /opt/JARVICE_UCX"
-  JARVICE_FOLDER=/opt/JARVICE_UCX
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
-  export MPI_HAS_UCX=true
+# # Now check if ucx is in JARVICE
+# elif [[ -f /opt/JARVICE-MPI/bin/ucx_info ]]; then
+#   echo "INFO: Found OpenMPI at /opt/JARVICE"
+#   JARVICE_FOLDER=/opt/JARVICE
+#   export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+#   export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+#   export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+#   export MPI_HOME=$JARVICE_FOLDER/openmpi/
+#   export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
+#   export MPI_HAS_UCX=true
 
-# If ucx is not available, use non-ucx JARVICE
-elif [[ -f /opt/JARVICE/bin/fi_info ]]; then
-  echo "WARNING: Did not find UCX build, using /opt/JARVICE"
-  JARVICE_FOLDER=/opt/JARVICE
-  export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
-  export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
-  export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
-  export MPI_HOME=$JARVICE_FOLDER/openmpi/
-  export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
+# # If ucx is not available, use non-ucx JARVICE
+# elif [[ -f /opt/JARVICE/bin/fi_info ]]; then
+#   echo "WARNING: Did not find UCX build, using /opt/JARVICE"
+#   JARVICE_FOLDER=/opt/JARVICE
+#   export PATH=$JARVICE_FOLDER/openmpi/bin/:$JARVICE_FOLDER/bin/:$PATH
+#   export LD_LIBRARY_PATH=$JARVICE_FOLDER/openmpi/lib/:$JARVICE_FOLDER/lib/:$LD_LIBRARY_PATH
+#   export CPATH=$JARVICE_FOLDER/openmpi/include/:$JARVICE_FOLDER/include/:$CPATH
+#   export MPI_HOME=$JARVICE_FOLDER/openmpi/
+#   export MPI_RUN=$JARVICE_FOLDER/openmpi/bin/mpirun
 
-else
-  echo "WARNING: Did not find OpenMPI build, defaulting to system, this may not work..."
-  export MPIRUN='mpirun'
-  NO_ACC_MPI_FOUND="true"
-fi
+# else
+#   echo "WARNING: Did not find OpenMPI build, defaulting to system, this may not work..."
+#   export MPIRUN='mpirun'
+#   NO_ACC_MPI_FOUND="true"
+# fi
+
+. /opt/JARVICE-MPI/jarvice_mpi.sh
+export MPI_HAS_UCX=true
 
 # OpenFOAM config dir
-export FOAMETC=/opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc
+# Need to see if we need avx512 or not...
+# Get the instruction set
+INSTRUCTION_SET=""
+# FLAGS=$(lscpu | grep Flags\:)
+# if [[ $FLAGS =~ "avx512" ]]; then
+#       echo "INFO: Has AVX512 Instructions"
+#       INSTRUCTION_SET="-avx512"
+# else
+#       echo "INFO: Has AVX2 Instructions"
+#       # INSTRUCTION_SET="avx2"
+# fi
+export FOAMETC="/opt/OpenFOAM${INSTRUCTION_SET}/OpenFOAM-${OPENFOAM_VERSION}/etc"
 # Add in the OpenFOAM environment to each node and override for the OpenFOAM project dir
 for i in $(cat /etc/JARVICE/nodes); do
   if [[ $i = "127.0.0.1" ]]; then

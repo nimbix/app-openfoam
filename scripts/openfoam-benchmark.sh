@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024, Nimbix, Inc.
+# Copyright (c) 2025, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,7 @@ NUMBEROFCELLS="8000"
 INTERCONNECT='ib'
 BENCHMARK_CASE='cavity'
 KEEP_RESULTS='false'
+WRITE_INTERVAL="0"
 
 while [[ -n "$1" ]]; do
   case "$1" in
@@ -83,6 +84,10 @@ while [[ -n "$1" ]]; do
   -keepResults)
     KEEP_RESULTS='true'
     ;;
+  -writeInterval)
+    shift
+    WRITE_INTERVAL="$1"
+    ;;
   *)
     echo "Invalid argument: $1" >&2
     exit 1
@@ -105,13 +110,13 @@ touch $CASE/CFD.foam
 [[ "$JOB_NAME" == "local" ]] && echo "127.0.0.1" > hostfile || true
 
 if [[ $BENCHMARK_CASE == 'motorbike' ]]; then
-  /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
 elif [[ $BENCHMARK_CASE == 'cavity' ]]; then
-  /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
 elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
-  /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
 elif [[ $BENCHMARK_CASE == 'cavity-simple-refineMesh' ]]; then
-  /usr/local/scripts/openfoam-benchmark-cavity-simple-refineMesh.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT
+  /usr/local/scripts/openfoam-benchmark-cavity-simple-refineMesh.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
 fi
 
 if [[ ${KEEP_RESULTS} == 'false' ]]; then

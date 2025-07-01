@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2024, Nimbix, Inc.
+# Copyright (c) 2025, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -91,10 +91,18 @@ function updateControlDict()
     echo "Updating controlDict file"
     CASE=$1
     SCALING=$2
+    WRITE_INTERVAL=$3
     numSteps=30 # $(perl -e "print 10.0/0.005")
 
     sed -i "s/endTime         10;/endTime         ${numSteps};/" $CASE/system/controlDict
     sed -i "s/deltaT          0.005;/deltaT          1;/" $CASE/system/controlDict
+
+    if [[ $WRITE_INTERVAL -gt 0 ]]; then
+        sed -i "s/writeInterval   100;/writeInterval   $WRITE_INTERVAL;/" $CASE/system/controlDict
+    else
+        WRITE_INTERVAL=$((numSteps+1))
+        sed -i "s/writeInterval   100;/writeInterval   $WRITE_INTERVAL;/" $CASE/system/controlDict
+    fi
 }
 
 function updateFvSolution()
@@ -150,6 +158,7 @@ NUM_PROCS=$2
 NUM_NODES=$3
 NUMBER_OF_CELLS=$4
 INTERCONNECT=$5
+WRITE_INTERVAL=$6
 
 # Need to calculate the scaling needed
 SCALING=$(echo "e((1/3)*l(${NUMBER_OF_CELLS}))/20" | bc -l)
@@ -164,7 +173,7 @@ echo ----------------------------------------------
 time updateBoundaryConditions $CASE
 sleep 1
 echo ----------------------------------------------
-time updateControlDict $CASE $SCALING
+time updateControlDict $CASE $SCALING $WRITE_INTERVAL
 sleep 1
 echo ----------------------------------------------
 time updateFvSolution $CASE

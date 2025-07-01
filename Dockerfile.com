@@ -1,4 +1,4 @@
-# Copyright (c) 2024, Nimbix, Inc.
+# Copyright (c) 2025, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,11 +33,10 @@
 ARG OPENFOAM_VERSION=v2312
 
 # Serial Number
-ARG SERIAL_NUMBER=20240703.1000
+ARG SERIAL_NUMBER=20250701.1000
 
 # Load updated JARVICE MPI with UCX
-FROM us-docker.pkg.dev/jarvice/images/mpi-builder:4.1.6 as JARVICE_MPI
-FROM rockylinux/rockylinux:9 as buffer
+FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.8-el9-gcc14 AS buffer
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
@@ -45,9 +44,6 @@ ENV SERIAL_NUMBER=${SERIAL_NUMBER}
 
 ARG OPENFOAM_VERSION
 ENV OPENFOAM_VERSION=${OPENFOAM_VERSION}
-
-# Grab jarvice_mpi from JARVICE_UCX_MPI
-COPY --from=JARVICE_MPI /opt/JARVICE /opt/JARVICE
 
 # Enable fast mirrors
 RUN echo "max_parallel_downloads=20" >> /etc/dnf/dnf.conf && \
@@ -65,6 +61,7 @@ RUN dnf install -y epel-release && \
         fftw-devel\
         flex\
         gcc-c++\
+        git\
         gmp-devel\
         libffi-devel\
         m4\
@@ -86,22 +83,40 @@ RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPEN
 WORKDIR /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}
 RUN curl -L https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3.0/ThirdParty/metis-5.1.0.tar.gz/download | tar xz
 
+# RUN cp -r /opt/OpenFOAM /opt/OpenFOAM-avx512
+
 # Build OpenFOAM with JARVICE MPI
-SHELL ["/bin/bash", "-c"]
-RUN source /opt/JARVICE/jarvice_mpi.sh && \
+RUN cd /opt/OpenFOAM/ && sed -i 's/\-O3\b/-O3 -mtune=generic -march=x86-64-v3/g' $(grep -lr -- "-O3" .)
+SHELL ["/usr/bin/bash", "-c"]
+RUN source /opt/JARVICE-MPI/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION} && \
     ./Allwmake -j$(nproc) -q
 
-RUN source /opt/JARVICE/jarvice_mpi.sh && \
+RUN source /opt/JARVICE-MPI/jarvice_mpi.sh && \
     source /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
     cd /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} && \
     ./Allwmake -j$(nproc) -q && \
     ./Allwmake -j$(nproc) -q && rm -rf build && rm -rf sources
 
+# # Build OpenFOAM with JARVICE MPI with AVX-512
+# RUN cd /opt/OpenFOAM-avx512/ && sed -i 's/\-O3\b/-O3 -mtune=generic -march=x86-64-v4/g' $(grep -lr -- "-O3" .)
+# SHELL ["/bin/bash", "-c"]
+# RUN source /opt/JARVICE/jarvice_mpi.sh && \
+#     source /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
+#     cd /opt/OpenFOAM-avx512/ThirdParty-${OPENFOAM_VERSION} && \
+#     ./Allwmake -j$(nproc) -q
+
+# RUN source /opt/JARVICE/jarvice_mpi.sh && \
+#     source /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc && \
+#     cd /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION} && \
+#     ./Allwmake -j$(nproc) -q && \
+#     ./Allwmake -j$(nproc) -q && rm -rf build && rm -rf sources
+
 # Main Program
 # FROM us-docker.pkg.dev/jarvice/images/mpi-test:custom-mpi-ucx-pci as JARVICE_MPI
-FROM rockylinux/rockylinux:9
+# FROM rockylinux/rockylinux:9
+FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.8-el9-gcc14
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 
@@ -152,8 +167,12 @@ RUN dnf install -y\
 COPY --from=buffer --chmod=0777 /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}
 COPY --from=buffer --chmod=0777 /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}/platforms /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}/platforms
 
+# COPY --from=buffer --chmod=0777 /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION} /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION}
+# COPY --from=buffer --chmod=0777 /opt/OpenFOAM-avx512/ThirdParty-${OPENFOAM_VERSION}/platforms /opt/OpenFOAM-avx512/ThirdParty-${OPENFOAM_VERSION}/platforms
+
 # Replace custom foamJob file with one provided by openfoam
 COPY buildScripts/foamJob.com /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/bin/foamJob
+# COPY buildScripts/foamJob.com /opt/OpenFOAM-avx512/OpenFOAM-${OPENFOAM_VERSION}/bin/foamJob
 
 COPY scripts /usr/local/scripts
 
@@ -163,6 +182,9 @@ COPY NAE/screenshot.png /etc/NAE/screenshot.png
 COPY NAE/license.txt /etc/NAE/license.txt
 COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 
+RUN echo "" >> /etc/NAE/license.txt && cat /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/COPYING >> /etc/NAE/license.txt
+
 # Copy over the app image and the AppDef
 COPY NAE/AppDef-com.json /etc/NAE/AppDef.json
 RUN curl --fail -X POST -d @/etc/NAE/AppDef.json https://cloud.nimbix.net/api/jarvice/validate
+RUN mkdir -p /etc/NAE && touch /etc/NAE/{screenshot.png,screenshot.txt,license.txt,AppDef.json,swlicense.txt}

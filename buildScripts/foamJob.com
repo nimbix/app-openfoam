@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 #------------------------------------------------------------------------------
 # =========                 |
 # \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
@@ -8,7 +8,7 @@
 #------------------------------------------------------------------------------
 #     Copyright (C) 2011-2015 OpenFOAM Foundation
 #     Copyright (C) 2019-2022 OpenCFD Ltd.
-#     Copyright (C) 2023-2024 Nimbix, Inc.
+#     Copyright (C) 2023-2025 Nimbix, Inc.
 #------------------------------------------------------------------------------
 # License
 #     This file is part of OpenFOAM, distributed under GPL-3.0-or-later.
@@ -255,7 +255,7 @@ then
         if [ "$JARVICE_MPI_PROVIDER" == "efa" ]; then
             # mpiopts="$mpiopts --mca pml cm --mca mtl ofi"
             # mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi"
-            mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi --mca btl self,vader,tcp --mca btl_sm_use_knem 0"
+            mpiopts="$mpiopts --mca pml ^ucx --mca mtl ofi --mca btl self,vader,tcp,ofi --mca btl_sm_use_knem 0"
         fi
 
         if [ "$JARVICE_MPI_PROVIDER" = "verbs" ]; then
