@@ -4,7 +4,8 @@
   "author": "OpenCFD Ltd",
   "licensed": true,
   "classifications": [
-    "HPC/Computational Fluid Dynamics"
+    "HPC/Computational Fluid Dynamics",
+    "HPC/Benchmark"
   ],
   "machines": [
     "na*"
