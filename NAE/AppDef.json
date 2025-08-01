@@ -4,9 +4,10 @@
   "author": "OPENFOAM_AUTHOR",
   "licensed": true,
   "appdefversion": 2,
-  "classifications": [
-    "Simulation/Computational Fluid Dynamics"
-  ],
+   "classifications": [
+      "HPC/Computational Fluid Dynamics (CFD)",
+      "HPC/Benchmark"
+   ],
   "machines": [
     "n*"
   ],
