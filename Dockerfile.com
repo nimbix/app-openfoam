@@ -77,7 +77,7 @@ RUN dnf install -y epel-release && \
 # Add OpenFOAM Repo (-4 -> use ipv4 -nv -> no verbose)
 WORKDIR /opt/OpenFOAM
 RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/OpenFOAM-${OPENFOAM_VERSION}.tgz | tar xz
-RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tgz | tar xz
+RUN curl -L https://dl.openfoam.com/source/${OPENFOAM_VERSION}/ThirdParty-${OPENFOAM_VERSION}.tar.gz | tar xz
 
 # Add missing ThirdParty source
 WORKDIR /opt/OpenFOAM/ThirdParty-${OPENFOAM_VERSION}

@@ -3,7 +3,7 @@
 set -e
 
 # Get latest openfoam for testing
-IMAGE=$(docker images | grep openfoam | head -n1 | awk '{print $1 ":" $2}')
+IMAGE=$(docker images --format table | grep openfoam | head -n1 | awk '{print $1 ":" $2}')
 
 echo "INFO: Found $IMAGE"
 
