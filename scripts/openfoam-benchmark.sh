@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -98,7 +98,7 @@ done
 
 # Copy the motorbike tutorial to working directory
 [[ -z "$JOB_NAME" ]] && JOB_NAME="local" || true
-CASE="/data/openfoam-${OPENFOAM_VERSION}/benchmark-${JOB_NAME}"
+CASE="/data/openfoam/benchmark-${JOB_NAME}"
 if [[ -d "$CASE" ]]; then
   rm -r $CASE
 fi
@@ -109,16 +109,25 @@ cd $CASE
 touch $CASE/CFD.foam
 [[ "$JOB_NAME" == "local" ]] && echo "127.0.0.1" > hostfile || true
 
+set +e
+EXIT_CODE=0
 if [[ $BENCHMARK_CASE == 'motorbike' ]]; then
   /usr/local/scripts/openfoam-benchmark-motorbike.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
+  EXIT_CODE=$?
 elif [[ $BENCHMARK_CASE == 'cavity' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
+  EXIT_CODE=$?
 elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity-simple.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
+  EXIT_CODE=$?
 elif [[ $BENCHMARK_CASE == 'cavity-simple-refineMesh' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity-simple-refineMesh.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
+  EXIT_CODE=$?
 fi
-
+echo "EXIT_CODE = $EXIT_CODE"
+if [[ $EXIT_CODE -gt 0 ]]; then
+  cat log
+fi
 if [[ ${KEEP_RESULTS} == 'false' ]]; then
   cd ${STARTING_DIRECTORY}
   rm -r $CASE

@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -150,7 +150,7 @@ RUN dnf install -y\
         flex\
         gcc-c++\
         gmp-devel\
-        htop\
+        htop btop\
         libffi-devel\
         m4\
         mousepad\
@@ -182,7 +182,8 @@ COPY NAE/screenshot.png /etc/NAE/screenshot.png
 COPY NAE/license.txt /etc/NAE/license.txt
 COPY NAE/OpenFOAM-logo-135x135.png /etc/NAE/OpenFOAM-logo-135x135.png
 
-RUN echo "" >> /etc/NAE/license.txt && cat /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/COPYING >> /etc/NAE/license.txt
+# RUN echo "" >> /etc/NAE/license.txt && cat /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/COPYING >> /etc/NAE/license.txt
+RUN echo "" >> /etc/NAE/license.txt && cat /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/LICENSE.md >> /etc/NAE/license.txt
 
 # Copy over the app image and the AppDef
 COPY NAE/AppDef-com.json /etc/NAE/AppDef.json

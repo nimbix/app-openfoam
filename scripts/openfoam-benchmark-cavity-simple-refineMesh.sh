@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 #
 # This script contains helpers for the openfoam-benchmark script
 
-set -e
+# set -e
 
 source /usr/local/scripts/openfoam-benchmark-helper.sh
 
@@ -208,10 +208,13 @@ echo ----------------------------------------------
 # echo ----------------------------------------------
 echo "Running simpleFoam"
 stime=$(date '+%s%3N')
+EXIT_CODE=0
 if [[ $OPENFOAM_TYPE == "ORG" ]]; then
     time runParallelUsingInterface $CASE $INTERCONNECT foamRun
+    EXIT_CODE=$?
 else
     time runParallelUsingInterface $CASE $INTERCONNECT simpleFoam
+    EXIT_CODE=$?
 fi
 etime=$(date '+%s%3N')
 dt_solver=$((etime-stime))
@@ -230,3 +233,5 @@ fi
 echo "BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE"
 echo "Cavity Simple, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE"
 echo "Cavity Simple, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, NA, $SOLVER_SCORE" >> ../benchmark.csv
+
+exit $EXIT_CODE

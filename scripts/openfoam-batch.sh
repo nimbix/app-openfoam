@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ TOOLSDIR="/usr/local/JARVICE/tools/bin"
 set -e
 
 # parse command line
-CASE="/data/openfoam-${OPENFOAM_VERSION}/run"
+CASE="/data/openfoam/openfoam-${OPENFOAM_VERSION}/run"
 MESHTYPE="blockMesh"
 SOLVER="laplacianFoam"
 
@@ -74,11 +74,11 @@ while [[ -n "$1" ]]; do
 done
 
 # add override for the OpenFOAM project dir
-echo "WM_PROJECT_USER_DIR=/data/openfoam-${OPENFOAM_VERSION}" | tee -a "$FOAMETC"/prefs.sh >/dev/null
-export WM_PROJECT_USER_DIR=/data/openfoam-${OPENFOAM_VERSION}
+echo "WM_PROJECT_USER_DIR=/data/openfoam/openfoam-${OPENFOAM_VERSION}" | tee -a "$FOAMETC"/prefs.sh >/dev/null
+export WM_PROJECT_USER_DIR=/data/openfoam/openfoam-${OPENFOAM_VERSION}
 
 # # create the working dir, the "run" dir where files go, matches to FOAM_RUN in env
-# mkdir -p /data/openfoam-${OPENFOAM_VERSION}/run
+# mkdir -p /data/openfoam/openfoam-${OPENFOAM_VERSION}/run
 
 # select Case dir, strip file name off path
 CASE=$(dirname "$CASE")

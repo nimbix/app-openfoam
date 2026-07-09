@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 #
 # This script contains helpers for the openfoam-benchmark script
 
-set -e
+# set -e
 
 # Source the OpenFOAM bashrc file
 if [[ -f /opt/OpenFOAM/OpenFOAM-${OPENFOAM_VERSION}/etc/bashrc ]]; then
