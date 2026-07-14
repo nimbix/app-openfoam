@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Nimbix, Inc.
+# Copyright (c) 2026, Nimbix, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ ARG OPENFOAM_TYPE=ORG
 # Serial Number
 ARG SERIAL_NUMBER=20240117.1000
 
-FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.8-el9-gcc14 AS buffer
+FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.10-el9-gcc15 AS buffer
 
 # Update SERIAL_NUMBER to force rebuild of all layers (don't use cached layers)
 ARG SERIAL_NUMBER
@@ -107,7 +107,7 @@ RUN source /opt/JARVICE-MPI/jarvice_mpi.sh && \
     ./Allwmake -j$(nproc) -q && rm -rf build
 
 # Main Program
-FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.8-el9-gcc14
+FROM us-docker.pkg.dev/jarvice/images/mpi-builder:5.0.10-el9-gcc15
 LABEL maintainer="Nimbix, Inc." \
       license="BSD"
 

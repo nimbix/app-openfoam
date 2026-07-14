@@ -85,7 +85,7 @@ RUN curl -L https://sourceforge.net/projects/openfoam-extend/files/foam-extend-3
 
 # RUN cp -r /opt/OpenFOAM /opt/OpenFOAM-avx512
 
-# Build OpenFOAM with JARVICE MPI
+# Build OpenFOAM with JARVICE MPI (LOOK INTO WM_CFLAGS="-std=gnu17" to allow scotch to build)
 RUN cd /opt/OpenFOAM/ && sed -i 's/\-O3\b/-O3 -mtune=generic -march=x86-64-v3/g' $(grep -lr -- "-O3" .)
 SHELL ["/usr/bin/bash", "-c"]
 RUN source /opt/JARVICE-MPI/jarvice_mpi.sh && \

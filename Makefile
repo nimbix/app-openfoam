@@ -1,7 +1,7 @@
 SHELL := /usr/bin/bash
 
 OPENFOAM_COM_VERSION := v2606
-OPENFOAM_ORG_VERSION := 13
+OPENFOAM_ORG_VERSION := 14
 
 DATE := $(shell date +"%Y-%m-%d")
 
