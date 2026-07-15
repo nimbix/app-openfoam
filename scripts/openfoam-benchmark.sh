@@ -123,6 +123,9 @@ elif [[ $BENCHMARK_CASE == 'cavity-simple' ]]; then
 elif [[ $BENCHMARK_CASE == 'cavity-simple-refineMesh' ]]; then
   /usr/local/scripts/openfoam-benchmark-cavity-simple-refineMesh.sh $CASE $NUM_PROCS $NUM_NODES $NUMBEROFCELLS $INTERCONNECT $WRITE_INTERVAL
   EXIT_CODE=$?
+else
+  echo "ERROR :: $BENCHMARK_CASE is not a valid benchmark..."
+  exit 1
 fi
 echo "EXIT_CODE = $EXIT_CODE"
 if [[ $EXIT_CODE -gt 0 ]]; then

@@ -68,14 +68,36 @@ function updateBlockMesh()
     sed -i "s/    hex (0 1 2 3 4 5 6 7) (20 8 8) simpleGrading (1 1 1)/    hex (0 1 2 3 4 5 6 7) ($NX $NY $NZ) simpleGrading (1 1 1)/" $CASE/system/blockMeshDict
 }
 
+function updateControlDict()
+{
+    echo "Updating controlDict file"
+    CASE=$1
+    SCALING=$2
+    WRITE_INTERVAL=$3
+
+    # Calculate the time step needed to hit a 0.1 CFL number
+    numSteps=30 # $(perl -e "print 10.0/0.005")
+
+    sed -i "s/endTime         500;/endTime         $numSteps;/" $CASE/system/controlDict
+
+
+    if [[ $WRITE_INTERVAL -gt 0 ]]; then
+        sed -i "s/writeInterval   100;/writeInterval   $WRITE_INTERVAL;/" $CASE/system/controlDict
+    else
+        WRITE_INTERVAL=$((numSteps+1))
+        sed -i "s/writeInterval   100;/writeInterval   $WRITE_INTERVAL;/" $CASE/system/controlDict
+    fi
+}
+
 function updateSnappyHexMeshDict()
 {
     echo "Updating the snappyHexMeshDict..."
-    CASE=$1
-    maxGlobalCells=$(($(getNumberOfProcessors)*2))000000
+    local CASE=$1
+    local NUMBEROFCELLS=$2
+    local maxGlobalCells=$(($(getNumberOfProcessors)*2))000000
     # sed -i "s/addLayers       true;/addLayers       false;/" $CASE/system/snappyHexMeshDict
     sed -i "s/    maxLocalCells 100000;/    maxLocalCells 1500000;/" $CASE/system/snappyHexMeshDict
-    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $maxGlobalCells;/" $CASE/system/snappyHexMeshDict
+    sed -i "s/    maxGlobalCells 2000000;/    maxGlobalCells $NUMBEROFCELLS;/" $CASE/system/snappyHexMeshDict
     # sed -i "s/    maxLoadUnbalance 0.10;/    maxLoadUnbalance 0.01;/" $CASE/system/snappyHexMeshDict
     # sed -i "s/            level (5 6);/            level (5 7);/" $CASE/system/snappyHexMeshDict
     # sed -i "s/            level   4;/            level   5;/" $CASE/system/snappyHexMeshDict
@@ -86,8 +108,10 @@ NUM_PROCS=$2
 NUM_NODES=$3
 NUMBEROFCELLS=$4
 INTERCONNECT=$5
+WRITE_INTERVAL=$6
 
-SCALING=$(perl -e "print $NUMBEROFCELLS/354538")
+# SCALING=$(perl -e "print ($NUMBEROFCELLS/354538)")
+SCALING=$(perl -e "print (($NUMBEROFCELLS/354538)**(1/3))")
 echo ----------------------------------------------
 time updateDecomposePar $CASE $NUM_PROCS $NUM_NODES
 sleep 1
@@ -95,11 +119,26 @@ echo ----------------------------------------------
 time updateBlockMesh $CASE $SCALING
 sleep 1
 echo ----------------------------------------------
-time updateSnappyHexMeshDict $CASE
+time updateSnappyHexMeshDict $CASE $NUMBEROFCELLS
 sleep 1
 echo ----------------------------------------------
-cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz $CASE/constant/geometry/
-surfaceFeatures > log.surfaceFeatures 2>&1
+time updateControlDict $CASE $SCALING $WRITE_INTERVAL
+sleep 1
+echo ----------------------------------------------
+
+if [[ $OPENFOAM_TYPE == "ORG" ]]; then
+    mkdir -p "$CASE/constant/geometry/"
+    cp $FOAM_TUTORIALS/resources/geometry/motorBike.obj.gz $CASE/constant/geometry/
+    surfaceFeatures > log.surfaceFeatures 2>&1
+else
+    mkdir -p constant/triSurface
+    # cp -f "$FOAM_TUTORIALS"/resources/geometry/motorBike.obj.gz $CASE/constant/triSurface/
+    ## Error in motorBike.obj.gz file from the v2606 src, just use the one from github...
+    cd constant/triSurface/ || exit 1
+    wget https://gitlab.com/openfoam/core/openfoam/-/raw/master/tutorials/resources/geometry/motorBike.obj.gz
+    cd ../..
+    surfaceFeatureExtract > log.surfaceFeatures 2>&1
+fi
 sleep 1
 time runBlockMesh $CASE
 sleep 1
@@ -137,9 +176,11 @@ MESH_BUILD_SCORE=$(perl -e "print int(86400000.0/$dt_build+0.99)")
 SOLVER_SCORE=$(perl -e "print int(86400000.0/$dt_solver+0.99)")
 
 if [[ ! -f "../benchmark.csv" ]]; then
-  echo "BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE" > ../benchmark.csv
+  echo "DATE, VERSION, CPU, BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, WRITE_INTERVAL, BUILD_SCORE, SOLVER_SCORE" > ../benchmark.csv
 fi
 
-echo "BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, BUILD_SCORE, SOLVER_SCORE"
-echo "Mortor Bike, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $MESH_BUILD_SCORE, $SOLVER_SCORE"
-echo "Mortor Bike, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $MESH_BUILD_SCORE, $SOLVER_SCORE" >> ../benchmark.csv
+DATE=$(date +%F_%T)
+CPU=$(lscpu | awk -F: '/Model name/ {gsub(/^[ \t]+/,"",$2); print $2}')
+echo "DATE, VERSION, CPU, BENCHMARK, NUM_PROCS, NUM_NODES, SCALING, INTERCONNECT, NUMBER_OF_CELLS, WRITE_INTERVAL, BUILD_SCORE, SOLVER_SCORE"
+echo "$DATE, $OPENFOAM_VERSION, $CPU, Mortor Bike, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $WRITE_INTERVAL, $MESH_BUILD_SCORE, $SOLVER_SCORE"
+echo "$DATE, $OPENFOAM_VERSION, $CPU, Mortor Bike, $NUM_PROCS, $NUM_NODES, $SCALING, $INTERCONNECT, $NUMBER_OF_CELLS, $WRITE_INTERVAL, $MESH_BUILD_SCORE, $SOLVER_SCORE" >> ../benchmark.csv

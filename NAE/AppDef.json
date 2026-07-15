@@ -87,7 +87,8 @@
           "values": [
             "cavity",
             "cavity-simple",
-            "cavity-simple-refineMesh"
+            "cavity-simple-refineMesh",
+            "motorbike"
           ],
           "required": true,
           "type": "selection",

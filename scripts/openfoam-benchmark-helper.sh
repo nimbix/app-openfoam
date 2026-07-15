@@ -117,5 +117,9 @@ function runParallelUsingInterface()
     NUM_PROCS=$(getNumberOfProcessors)
 
     foamJob -p -w $APP "$@"
+    EXIT_CODE=$?
+    if [[ $EXIT_CODE -gt 0 ]]; then
+        exit 1
+    fi
     cp log $CASE/log.$APP
 }
